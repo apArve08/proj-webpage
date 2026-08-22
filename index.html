@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ap Arveend — The Build Floor</title>
+<meta name="description" content="A work-order log of everything Ap Arveend has built — Power Platform tooling, local AI systems, and browser-only utilities.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='3' fill='%2312151b'/%3E%3Crect x='6' y='6' width='20' height='20' fill='none' stroke='%23ff7a18' stroke-width='2.5'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='%23ff7a18'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#12151b;
+    --ink-2:#1a1f2b;
+    --line:#333c4d;
+    --paper:#ece4d3;
+    --paper-2:#ddd2ba;
+    --ink-on-paper:#1d2027;
+    --line-on-paper:#c6b99c;
+    --amber:#ff7a18;
+    --amber-deep:#c9600f;
+    --hi:#f5f1e6;
+    --lo:#8b93a3;
+
+    --display: "Fraunces", serif;
+    --body: "Bricolage Grotesque", sans-serif;
+    --mono: "JetBrains Mono", monospace;
+  }
+
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    margin:0;
+    background:var(--ink);
+    color:var(--hi);
+    font-family:var(--body);
+    font-weight:400;
+    -webkit-font-smoothing:antialiased;
+  }
+  img,svg{ display:block; max-width:100%; }
+  a{ color:inherit; }
+  ::selection{ background:var(--amber); color:var(--ink); }
+  :focus-visible{ outline:2.5px solid var(--amber); outline-offset:3px; }
+
+  .wrap{ max-width:1180px; margin:0 auto; padding:0 clamp(1.25rem, 4vw, 2.75rem); }
+
+  /* ---------- background texture ---------- */
+  .grid-bg{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size:64px 64px;
+    opacity:.14;
+    mask-image:radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 85%);
+  }
+
+  /* ---------- nav ---------- */
+  nav{
+    position:sticky; top:0; z-index:20;
+    background:rgba(18,21,27,.86);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  nav .wrap{
+    display:flex; align-items:center; gap:1.75rem;
+    height:60px; overflow-x:auto; white-space:nowrap;
+    scrollbar-width:none;
+  }
+  nav .wrap::-webkit-scrollbar{ display:none; }
+  .brand{
+    font-family:var(--mono); font-weight:700; font-size:.85rem;
+    letter-spacing:.06em; color:var(--hi); text-decoration:none;
+    flex-shrink:0;
+  }
+  .brand span{ color:var(--amber); }
+  .navlinks{ display:flex; gap:1.4rem; margin-left:.5rem; }
+  .navlinks a{
+    font-family:var(--mono); font-size:.72rem; letter-spacing:.07em;
+    text-transform:uppercase; text-decoration:none; color:var(--lo);
+    transition:color .15s ease;
+  }
+  .navlinks a:hover{ color:var(--amber); }
+  .nav-gh{
+    margin-left:auto; flex-shrink:0;
+    font-family:var(--mono); font-size:.72rem; letter-spacing:.05em;
+    text-decoration:none; color:var(--hi);
+    border:1px solid var(--line); padding:.45rem .8rem; border-radius:2px;
+    transition:border-color .15s ease, color .15s ease;
+  }
+  .nav-gh:hover{ border-color:var(--amber); color:var(--amber); }
+
+  /* ---------- hero ---------- */
+  .hero{ position:relative; z-index:1; padding:clamp(4rem,10vw,7rem) 0 clamp(3rem,7vw,4.5rem); }
+  .eyebrow{
+    font-family:var(--mono); font-size:.75rem; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--amber); margin:0 0 1.1rem;
+    display:flex; align-items:center; gap:.6rem;
+  }
+  .eyebrow::before{
+    content:""; width:7px; height:7px; background:var(--amber); border-radius:50%;
+    box-shadow:0 0 0 3px rgba(255,122,24,.18);
+  }
+  h1{
+    font-family:var(--display); font-weight:900; font-style:normal;
+    font-size:clamp(2.9rem,8.5vw,6.4rem); line-height:.96; letter-spacing:-.02em;
+    margin:0 0 1.4rem; max-width:14ch;
+  }
+  h1 em{ font-style:italic; font-weight:400; color:var(--amber); }
+  .lede{
+    font-size:clamp(1.02rem,2vw,1.22rem); line-height:1.6; color:var(--lo);
+    max-width:52ch; margin:0 0 2.4rem; font-weight:300;
+  }
+  .stats{
+    font-family:var(--mono); font-size:.8rem; letter-spacing:.03em;
+    color:var(--lo); display:flex; flex-wrap:wrap; gap:.5rem 0;
+    border-top:1px dashed var(--line); border-bottom:1px dashed var(--line);
+    padding:1rem 0;
+  }
+  .stats b{ color:var(--hi); font-weight:700; }
+  .stats .num{ color:var(--amber); }
+  .stats .sep{ margin:0 .9rem; color:var(--line); }
+  .legend{ display:flex; gap:1.4rem; margin-top:1.4rem; flex-wrap:wrap; }
+  .legend span{
+    font-family:var(--mono); font-size:.68rem; letter-spacing:.06em;
+    text-transform:uppercase; color:var(--lo); display:flex; align-items:center; gap:.4rem;
+  }
+  .dot{ width:8px; height:8px; border-radius:50%; display:inline-block; }
+  .dot.active{ background:transparent; border:1.5px solid var(--amber-deep); }
+  .dot.shipped{ background:var(--amber); }
+  .dot.prototype{ background:transparent; border:1.5px dashed var(--lo); }
+
+  /* ---------- stations ---------- */
+  .station{ position:relative; z-index:1; padding:clamp(2.75rem,6vw,4rem) 0; scroll-margin-top:80px; }
+  .station-head{
+    display:flex; align-items:baseline; gap:1rem; flex-wrap:wrap;
+    margin-bottom:2.2rem; border-bottom:1px solid var(--line); padding-bottom:1.2rem;
+  }
+  .station-no{
+    font-family:var(--mono); font-size:.78rem; color:var(--amber);
+    letter-spacing:.1em; flex-shrink:0;
+  }
+  .station-title{
+    font-family:var(--display); font-weight:700; font-size:clamp(1.5rem,3vw,2.1rem);
+    margin:0; flex-shrink:0;
+  }
+  .station-desc{ font-size:.92rem; color:var(--lo); margin-left:auto; max-width:34ch; }
+
+  .ticket-grid{
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr));
+    gap:1.35rem;
+  }
+
+  /* ---------- ticket card ---------- */
+  .ticket{
+    position:relative;
+    background:var(--paper); color:var(--ink-on-paper);
+    border-radius:3px; border:1px solid var(--paper-2);
+    padding:1.35rem 1.4rem 1.2rem;
+    box-shadow:0 14px 30px -18px rgba(0,0,0,.65);
+    opacity:0; transform:translateY(18px);
+    cursor:pointer;
+    transition:opacity .55s ease, transform .55s ease, box-shadow .2s ease, border-color .2s ease;
+  }
+  .ticket.in-view{ opacity:1; transform:translateY(0); }
+  .ticket:hover{
+    box-shadow:0 20px 38px -16px rgba(0,0,0,.75);
+    border-color:var(--amber);
+    transform:translateY(-3px) rotate(-.35deg);
+  }
+  .ticket::before{
+    content:""; position:absolute; top:-7px; left:26px;
+    width:14px; height:14px; background:var(--ink); border-radius:50%;
+    box-shadow:0 0 0 2px var(--paper-2);
+  }
+  .ticket-row{
+    display:flex; align-items:center; justify-content:space-between; gap:.6rem;
+    padding-bottom:.7rem; margin-bottom:.85rem;
+    border-bottom:1px dashed var(--line-on-paper);
+  }
+  .wo{ font-family:var(--mono); font-size:.72rem; letter-spacing:.08em; color:#6b6455; }
+  .stamp{
+    font-family:var(--mono); font-size:.62rem; letter-spacing:.1em; font-weight:700;
+    padding:.2rem .55rem; border-radius:2px; transform:rotate(-3deg); flex-shrink:0;
+  }
+  .stamp.active{ color:var(--amber-deep); border:1.5px solid var(--amber-deep); }
+  .stamp.shipped{ background:var(--amber); color:var(--ink); border:1.5px solid var(--amber); }
+  .stamp.prototype{ color:#7a7264; border:1.5px dashed #7a7264; }
+
+  .ticket h3{
+    font-family:var(--display); font-weight:700; font-size:1.28rem;
+    margin:0 0 .5rem; line-height:1.15;
+  }
+  .ticket p{ font-size:.89rem; line-height:1.55; color:#4a4638; margin:0 0 1rem; }
+
+  .tags{ display:flex; flex-wrap:wrap; gap:.4rem; margin-bottom:1.1rem; }
+  .tag{
+    font-family:var(--mono); font-size:.66rem; letter-spacing:.03em;
+    color:#5b5646; background:rgba(0,0,0,.05); border:1px solid var(--line-on-paper);
+    padding:.22rem .5rem; border-radius:2px;
+  }
+
+  .ticket-links{ display:flex; gap:.6rem; flex-wrap:wrap; }
+  .tlink{
+    font-family:var(--mono); font-size:.72rem; letter-spacing:.03em;
+    text-decoration:none; color:var(--ink-on-paper);
+    border:1px solid var(--ink-on-paper); padding:.4rem .7rem; border-radius:2px;
+    transition:background .15s ease, color .15s ease, border-color .15s ease;
+  }
+  .tlink:hover{ background:var(--ink-on-paper); color:var(--paper); }
+  .tlink.live{ border-color:var(--amber-deep); color:var(--amber-deep); }
+  .tlink.live:hover{ background:var(--amber-deep); color:var(--paper); }
+  .tlink.details{ background:none; cursor:pointer; font:inherit; }
+
+  /* ---------- detail modal ---------- */
+  .modal-overlay{
+    position:fixed; inset:0; z-index:60;
+    background:rgba(18,21,27,.78); backdrop-filter:blur(6px);
+    display:flex; align-items:flex-start; justify-content:center;
+    padding:clamp(1.25rem,5vw,4.5rem) 1rem;
+    overflow-y:auto;
+    opacity:0; visibility:hidden;
+    transition:opacity .25s ease;
+  }
+  .modal-overlay.open{ opacity:1; visibility:visible; }
+  .modal-sheet{
+    position:relative;
+    background:var(--paper); color:var(--ink-on-paper);
+    width:100%; max-width:720px;
+    border-radius:4px;
+    padding:2.2rem clamp(1.4rem,4vw,2.4rem) 2.1rem;
+    box-shadow:0 30px 70px -20px rgba(0,0,0,.6);
+    transform:scale(.96) translateY(10px);
+    transition:transform .25s ease;
+  }
+  .modal-overlay.open .modal-sheet{ transform:scale(1) translateY(0); }
+  .modal-sheet::before{
+    content:""; position:absolute; top:-7px; left:30px;
+    width:14px; height:14px; background:var(--ink); border-radius:50%;
+    box-shadow:0 0 0 2px var(--paper-2);
+  }
+  .modal-close{
+    position:absolute; top:1.1rem; right:1.1rem;
+    width:34px; height:34px; border-radius:50%;
+    border:1px solid var(--line-on-paper); background:transparent;
+    font-family:var(--mono); font-size:.9rem; color:var(--ink-on-paper);
+    cursor:pointer; transition:background .15s ease, color .15s ease, border-color .15s ease;
+  }
+  .modal-close:hover{ background:var(--ink-on-paper); color:var(--paper); border-color:var(--ink-on-paper); }
+  .modal-head{
+    display:flex; align-items:center; justify-content:space-between; gap:.6rem;
+    padding-bottom:.7rem; margin-bottom:.9rem; padding-right:2.6rem;
+    border-bottom:1px dashed var(--line-on-paper);
+  }
+  .modal-title{
+    font-family:var(--display); font-weight:800; font-size:clamp(1.5rem,3.4vw,2rem);
+    margin:0 0 .6rem; line-height:1.12; padding-right:2rem;
+  }
+  .modal-summary{ font-size:.94rem; line-height:1.6; color:#4a4638; margin:0 0 1.3rem; }
+  .modal-gallery{
+    display:flex; gap:.7rem; overflow-x:auto; margin-bottom:1.4rem;
+    padding-bottom:.3rem;
+  }
+  .modal-gallery a{ flex-shrink:0; }
+  .modal-gallery img{
+    height:190px; width:auto; border-radius:2px; border:1px solid var(--line-on-paper);
+    cursor:zoom-in;
+  }
+  .detail-body{ font-size:.92rem; line-height:1.68; color:#39362c; margin-bottom:1.5rem; }
+  .detail-body h4,.detail-body h5,.detail-body h6{
+    font-family:var(--display); font-weight:700; color:var(--ink-on-paper);
+    margin:1.3rem 0 .5rem;
+  }
+  .detail-body h4:first-child{ margin-top:0; }
+  .detail-body p{ margin:0 0 .85rem; }
+  .detail-body ul,.detail-body ol{ margin:0 0 .85rem; padding-left:1.25rem; }
+  .detail-body li{ margin-bottom:.3rem; }
+  .detail-body strong{ color:var(--ink-on-paper); }
+  .detail-body code{
+    font-family:var(--mono); font-size:.85em; background:rgba(0,0,0,.06);
+    padding:.1rem .35rem; border-radius:2px;
+  }
+  .detail-body pre{
+    font-family:var(--mono); font-size:.8rem; background:var(--ink);
+    color:var(--hi); padding:.9rem 1rem; border-radius:3px; overflow-x:auto;
+    margin:0 0 .85rem;
+  }
+  .detail-body pre code{ background:none; padding:0; }
+  .detail-body a{ color:var(--amber-deep); }
+
+  /* ---------- footer ---------- */
+  footer{
+    position:relative; z-index:1; margin-top:2rem;
+    border-top:1px solid var(--line); padding:clamp(2.5rem,6vw,3.5rem) 0 3rem;
+  }
+  footer .eyebrow{ color:var(--lo); }
+  footer .eyebrow::before{ background:var(--lo); box-shadow:none; }
+  footer h2{
+    font-family:var(--display); font-weight:600; font-style:italic;
+    font-size:clamp(1.5rem,3vw,2.1rem); margin:0 0 1.6rem; max-width:24ch; color:var(--hi);
+  }
+  .foot-sign{ font-family:var(--mono); font-size:.78rem; color:var(--hi); letter-spacing:.04em; margin:0 0 1.5rem; }
+  .foot-links{ display:flex; gap:.9rem; flex-wrap:wrap; }
+  .foot-links a{
+    font-family:var(--mono); font-size:.78rem; text-decoration:none; color:var(--hi);
+    border:1px solid var(--line); padding:.6rem 1rem; border-radius:2px;
+    transition:border-color .15s ease, color .15s ease;
+  }
+  .foot-links a:hover{ border-color:var(--amber); color:var(--amber); }
+  .foot-note{ font-family:var(--mono); font-size:.7rem; color:var(--lo); margin-top:2.2rem; letter-spacing:.03em; }
+
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+    .ticket{ transition:none; opacity:1; transform:none; }
+    .ticket:hover{ transform:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-bg" aria-hidden="true"></div>
+
+<nav>
+  <div class="wrap">
+    <a class="brand" href="#top">AP<span>//</span>BUILD-FLOOR</a>
+    <div class="navlinks" id="navlinks"></div>
+    <a class="nav-gh" href="https://github.com/aparve08" target="_blank" rel="noopener">GitHub ↗</a>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <p class="eyebrow">Floor status — live</p>
+    <h1>The Build<br><em>Floor.</em></h1>
+    <p class="lede">IT executive at Arveon Technologies, running MES lines in VB.NET and Power Fx by day. Off the clock: local AI systems, dev tooling, and whatever browser experiment won't leave me alone. Every project below is tracked like a real work order.</p>
+    <p class="stats" id="stats"></p>
+    <div class="legend">
+      <span><i class="dot active"></i>Active — in progress</span>
+      <span><i class="dot shipped"></i>Shipped — v1 done</span>
+      <span><i class="dot prototype"></i>Prototype — early</span>
+    </div>
+  </div>
+</header>
+
+<main id="stations"></main>
+
+<footer>
+  <div class="wrap">
+    <p class="eyebrow">End of shift</p>
+    <h2>More work orders are always queued.</h2>
+    <p class="foot-sign">Ap Arveend — Arveon Technologies</p>
+    <div class="foot-links">
+      <a href="https://github.com/aparve08" target="_blank" rel="noopener">github.com/aparve08 ↗</a>
+      <a href="https://aparve08.github.io" target="_blank" rel="noopener">aparve08.github.io ↗</a>
+    </div>
+    <p class="foot-note">Built as a static, dependency-free page. Edit the PROJECTS array in the source to add, remove, or correct a work order.</p>
+  </div>
+</footer>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-sheet" role="dialog" aria-modal="true" aria-labelledby="modalTitle" tabindex="-1">
+    <button class="modal-close" id="modalClose" aria-label="Close work order">✕</button>
+    <div class="modal-head">
+      <span class="wo" id="modalWo"></span>
+      <span class="stamp" id="modalStamp"></span>
+    </div>
+    <h3 class="modal-title" id="modalTitle"></h3>
+    <p class="modal-summary" id="modalSummary"></p>
+    <div class="modal-gallery" id="modalGallery"></div>
+    <div class="detail-body" id="modalBody"></div>
+    <div class="tags" id="modalTags"></div>
+    <div class="ticket-links" id="modalLinks"></div>
+  </div>
+</div>
+
+<script>
+/* =========================================================================
+   EDIT ME
+   Every card on this page is generated from PROJECTS below. To add, remove,
+   re-order, or fix a link: edit this array, save, and refresh — nothing
+   else in the file needs to change.
+
+   status: "active" | "shipped" | "prototype"
+   repo:   the part after github.com/aparve08/   (leave "" to hide the button)
+   live:   full URL to a live demo / deployed page (leave "" to hide it)
+
+   Clicking a card (or its "Details" button) opens a bigger sheet with:
+   detail: a longer write-up as a markdown string. Supports ## headings,
+           **bold**, *italic*, `code`, ``` code blocks, [links](url),
+           and - / 1. lists. Leave "" to just show the short desc, larger.
+   images: [{ src:"assets/<repo>/1.png", alt:"What it shows" }, ...]
+           Put real image files in an /assets/<repo-slug>/ folder in the
+           repo and point src at them (relative path, or a full URL).
+           Leave [] to skip the gallery for that card.
+   ========================================================================= */
+
+const STATIONS = [
+  { id:"station-01", label:"Station 01", title:"Power Platform Tooling",
+    desc:"Dev tools for the day job — instruments Power Platform doesn't ship with." },
+  { id:"station-02", label:"Station 02", title:"AI & Agent Systems",
+    desc:"Local-first models, agents, and the roadmap tying it together." },
+  { id:"station-03", label:"Station 03", title:"Browser Tools",
+    desc:"Single-file utilities built to solve one problem well. No install." },
+  { id:"station-04", label:"Station 04", title:"Personal Builds",
+    desc:"Apps built for a life outside the plant floor." },
+];
+
+const PROJECTS = [
+  // ---------------- Station 01 — Power Platform Tooling ----------------
+  { wo:"WO-001", station:"station-01", title:"Flow Map Visualizer",
+    desc:"Paste a Power Automate flow definition and see the trigger-to-action graph rendered live, with unreachable branches flagged before they ship.",
+    stack:["Power Automate","JavaScript","Single-file"], status:"active",
+    repo:"flow-map-visualizer", live:"", detail:"", images:[] },
+  { wo:"WO-002", station:"station-01", title:"Canvas App Inspector",
+    desc:"Unzips a .msapp file and renders the control tree per screen — catching broken bindings, dead references, and orphaned collections Studio won't warn you about.",
+    stack:["Power Apps","Power Fx","JavaScript"], status:"shipped",
+    repo:"msapp-inspector", live:"",
+    detail:"## What it checks\n- Controls bound to a data source that isn't in the app's connection list\n- `OnSelect` formulas referencing a renamed or deleted control\n- Orphaned collections nothing ever populates\n\n## How it works\nUnzips the `.msapp` package entirely client-side using `DecompressionStream`, then parses both `Controls/*.json` and `Src/*.fx.yaml` against 14 rules.\n\n## Dependency graph\nTraces producer → symbol → consumer chains across the unpacked source — for example `Screen.OnVisible` sets `varUser`, and `Header.Text` reads it back — rendered as its own Dependencies tab alongside a screen-flow map.\n\nShares its Power Fx parser core (`powerfx-core.js`) with the Power Fx Linter and Flow Map Visualizer, tested against 41 golden-snapshot assertions.",
+    images:[] },
+  { wo:"WO-003", station:"station-01", title:"YAML Component Studio",
+    desc:"Customize a Power Apps component in the browser and copy paste-ready YAML straight into Studio — 24 catalog components, validated before you copy.",
+    stack:["Power Apps","YAML","JavaScript"], status:"shipped",
+    repo:"powerapps-yaml-studio", live:"",
+    detail:"## The workflow\nBrowse a catalog of 24 components, screens, formulas, and functions, edit variables and config through a form, then copy the generated YAML straight into Power Apps Studio.\n\n## Built on a round-trip parser\nA custom CST parser/emitter for `pa-yaml` guarantees byte-identical round trips, with orphan detection across the fixture corpus.\n\n## Fixed after real Studio errors\nThree paste failures surfaced in actual use and were fixed at the root across every template:\n- `PA1001` — colon inside a plain YAML scalar\n- `PA2108` — unknown `HintText` / `Fill` properties\n- `PA2109` — unknown Gallery variant\n\nComponents and screens default to inline mock data instead of live data-source names, so paste-and-preview works standalone. 836 assertions green.",
+    images:[] },
+  { wo:"WO-004", station:"station-01", title:"Power Fx Linter",
+    desc:"Pretty-prints pasted Power Fx formulas with proper indentation and maps which controls, collections, and data sources each one actually touches.",
+    stack:["Power Fx","JavaScript","Parser"], status:"active",
+    repo:"powerfx-linter", live:"", detail:"", images:[] },
+  { wo:"WO-005", station:"station-01", title:"Invoice OCR Pipeline",
+    desc:"Extracts structured data from scanned invoices — started as a Power Automate AI Builder flow, now benchmarking local vision models through Ollama.",
+    stack:["Python","Ollama","OCR"], status:"active",
+    repo:"power-automate-ocr", live:"",
+    detail:"## The goal\nRead invoices and pull specific data fields — reliably enough to trust without checking every one by hand.\n\n## What's been tried\n- Power Automate's AI Builder flow — the starting point\n- Tesseract.js in the browser — accuracy wasn't good enough on real documents\n- SmolDocling (Hugging Face vision-language OCR) — under evaluation\n- **GLM-OCR via Ollama** — current front-runner\n\n## Benchmark\nOn a one-page approval PDF, CPU-only: 800px resolution transcribed correctly in 36.7s; 1400px took 140.3s, also correct; 1800px broke into a repeated-output loop.\n\nStill open: a UI for the pipeline plus structured field extraction on top of the raw OCR output.",
+    images:[] },
+  { wo:"WO-006", station:"station-01", title:"Deck Generator",
+    desc:"Builds a PowerPoint deck from a form, not a markdown paste — custom backgrounds, live preview, and a library of ready-made layout blocks.",
+    stack:["JavaScript","PPTX","Offline-first"], status:"active",
+    repo:"pptx-design-generator", live:"", detail:"", images:[] },
+
+  // ---------------- Station 02 — AI & Agent Systems ----------------
+  { wo:"WO-007", station:"station-02", title:"AI Engineering Roadmap",
+    desc:"A 49-project, 8-phase self-study curriculum from RAG pipelines to distributed systems, tracked with a Gantt chart and a living progress page.",
+    stack:["Roadmap","Python","Next.js"], status:"active",
+    repo:"ai-engineering-roadmap", live:"https://aparve08.github.io/quiz/pr3.html", detail:"", images:[] },
+  { wo:"WO-008", station:"station-02", title:"Local RAG Chatbot",
+    desc:"A fully local retrieval pipeline for internal company use — Ollama, ChromaDB, and LangChain, no data leaving the building.",
+    stack:["Python","Ollama","ChromaDB","LangChain"], status:"shipped",
+    repo:"rag-chatbot", live:"", detail:"", images:[] },
+  { wo:"WO-009", station:"station-02", title:"AI Ensembler Fusion",
+    desc:"Fans one prompt out to three local models, scores how much they agree, and judge-fuses a final answer — nothing leaves the machine.",
+    stack:["Next.js","React","Ollama"], status:"shipped",
+    repo:"AI-Ensembler-Fusion", live:"",
+    detail:"## Pipeline\n1. Fan a prompt out to three local models — Llama 3.2 3B, Qwen 2.5 3B, Phi-3 3.8B\n2. Embed each response with `nomic-embed-text`\n3. Score pairwise agreement across Levenshtein, Jaccard, cosine, and semantic metrics\n4. Weighted centrality picks a centroid model\n5. A judge model fuses the final answer\n\n## Two fusion modes\n**Centroid** returns the most-agreed-with response as-is. **Judge** has a model synthesize a new answer from all three.\n\nDomain-based weighting adjusts per run — for `general`, Llama gets 40%, Qwen and Phi split the rest. The UI reports per-model latency and throughput, consensus percentage, and a full \"Consensus Math Log\" per-pair breakdown.\n\nRuns entirely local through Ollama — nothing leaves the machine. The frontend is a pure WebSocket event reducer; fan-out, embedding, scoring, and fusion all happen on a separate gateway process.",
+    images:[] },
+  { wo:"WO-010", station:"station-02", title:"Multi-Agent Workspace",
+    desc:"Three role-assigned agents — architect, developer, QA — collaborating on a coding task through a live orchestration canvas.",
+    stack:["Next.js","Socket.io","BullMQ","Ollama"], status:"active",
+    repo:"multi-agent-workspace", live:"", detail:"", images:[] },
+  { wo:"WO-011", station:"station-02", title:"Glasshouse-lite",
+    desc:"A tamper-evident session recorder for AI coding agents — every file read, command, and test run hash-chained for integrity, replayable in the browser.",
+    stack:["TypeScript","SHA-256","Adapters"], status:"active",
+    repo:"glasshouse-lite", live:"",
+    detail:"## What it records\nObservable actions only — file reads/writes, terminal commands, test execution, command output, session metadata. It never records hidden model reasoning.\n\n## Tamper-evidence\nEvery event is linked into a SHA-256 hash chain, verified entirely in the browser (no Web Crypto dependency, so it works from `file://`).\n\n## Two pieces\nA local recorder wraps the coding agent; a standalone replay viewer gives an interactive timeline, diff inspection, and integrity verification. Sessions export as portable JSON or a self-contained offline HTML replay file.\n\n## Adapters\nClaude Code (via passive `.claude/settings.json` hooks) and Codex CLI (`codex exec --json`) both work today. A Gemini CLI adapter is next, along with MCP integrations and signed session verification.",
+    images:[] },
+  { wo:"WO-012", station:"station-02", title:"Token & Attention Visualizer",
+    desc:"An in-browser look at how a tiny model reads a sentence — live BPE tokenization next to a probability heatmap and attention lens.",
+    stack:["JavaScript","ML Demo","Single-file"], status:"shipped",
+    repo:"token-attention-visualizer", live:"", detail:"", images:[] },
+
+  // ---------------- Station 03 — Browser Tools ----------------
+  { wo:"WO-013", station:"station-03", title:"Bluetooth Radar",
+    desc:"Points toward nearby Bluetooth devices compass-style, estimating direction and distance from signal strength. Phone or laptop, one file.",
+    stack:["Web Bluetooth","JavaScript"], status:"prototype",
+    repo:"bluetooth-radar", live:"", detail:"", images:[] },
+  { wo:"WO-014", station:"station-03", title:"Cube Solver",
+    desc:"Scans a 3x3 Rubik's cube through the webcam and walks through the solve step by step. No app install, just a browser tab.",
+    stack:["Computer Vision","JavaScript"], status:"prototype",
+    repo:"cube-solver", live:"", detail:"", images:[] },
+  { wo:"WO-015", station:"station-03", title:"House Plan Designer",
+    desc:"Sketch a floor plan in 2D and preview it as a 3D mockup with surroundings, without leaving the browser tab.",
+    stack:["Three.js","JavaScript"], status:"prototype",
+    repo:"house-plan-designer", live:"", detail:"", images:[] },
+  { wo:"WO-016", station:"station-03", title:"Postlab",
+    desc:"A pocket photo editor for prepping Instagram posts — crop, film-style grading, template layouts, all running from a homescreen shortcut.",
+    stack:["Canvas API","JavaScript","PWA"], status:"active",
+    repo:"postlab", live:"", detail:"", images:[] },
+  { wo:"WO-017", station:"station-03", title:"Bin Sorter",
+    desc:"Points a webcam at an item and shows which of three bins it belongs in, trained in-browser with Teachable Machine and served through Flask.",
+    stack:["Python","Flask","TensorFlow"], status:"active",
+    repo:"rubbish-classifier", live:"", detail:"", images:[] },
+
+  // ---------------- Station 04 — Personal Builds ----------------
+  { wo:"WO-018", station:"station-04", title:"Arveend Terminal",
+    desc:"A personal finance workbook built entirely in openpyxl — color-coded inputs, P&L tracking, and a dashboard, zero formula errors verified.",
+    stack:["Python","openpyxl","Excel"], status:"shipped",
+    repo:"arveend-terminal", live:"", detail:"", images:[] },
+  { wo:"WO-019", station:"station-04", title:"RunTrack",
+    desc:"Pulls in Strava runs and meal photos and turns them into one health dashboard. FastAPI and Gemini Flash on the backend, deployed on Cloud Run.",
+    stack:["FastAPI","Next.js","Supabase","Gemini"], status:"shipped",
+    repo:"runtrack", live:"", detail:"", images:[] },
+  { wo:"WO-020", station:"station-04", title:"GastroHub",
+    desc:"A gastric health companion app, built for a healthcare hackathon track.",
+    stack:["Healthcare","App"], status:"prototype",
+    repo:"gastrohub", live:"", detail:"", images:[] },
+];
+
+const GH_USER = "aparve08";
+const STATUS_LABEL = { active:"Active", shipped:"Shipped", prototype:"Prototype" };
+
+function renderStats(){
+  const total = PROJECTS.length;
+  const stationCount = STATIONS.length;
+  const stack = ["VB.NET","Power Fx","Python","TypeScript"];
+  document.getElementById("stats").innerHTML =
+    `<b class="num">${total}</b> work orders<span class="sep">·</span>` +
+    `<b class="num">${stationCount}</b> stations<span class="sep">·</span>` +
+    stack.join(" / ");
+}
+
+function renderNav(){
+  document.getElementById("navlinks").innerHTML = STATIONS.map(s =>
+    `<a href="#${s.id}">${s.label}</a>`).join("");
+}
+
+function ticketHTML(p){
+  const repoUrl = p.repo ? `https://github.com/${GH_USER}/${p.repo}` : "";
+  const links = [
+    repoUrl ? `<a class="tlink" href="${repoUrl}" target="_blank" rel="noopener">Code ↗</a>` : "",
+    p.live ? `<a class="tlink live" href="${p.live}" target="_blank" rel="noopener">Live ↗</a>` : "",
+  ].join("");
+  return `
+    <article class="ticket" data-slug="${slugify(p.title)}">
+      <div class="ticket-row">
+        <span class="wo">${p.wo}</span>
+        <span class="stamp ${p.status}">${STATUS_LABEL[p.status]}</span>
+      </div>
+      <h3>${p.title}</h3>
+      <p>${p.desc}</p>
+      <div class="tags">${p.stack.map(t => `<span class="tag">${t}</span>`).join("")}</div>
+      <div class="ticket-links">
+        <button class="tlink details" type="button">Details →</button>
+        ${links}
+      </div>
+    </article>`;
+}
+
+function renderStations(){
+  const main = document.getElementById("stations");
+  main.innerHTML = STATIONS.map(s => {
+    const items = PROJECTS.filter(p => p.station === s.id);
+    if(!items.length) return "";
+    return `
+      <section class="station" id="${s.id}">
+        <div class="wrap">
+          <div class="station-head">
+            <span class="station-no">${s.label}</span>
+            <h2 class="station-title">${s.title}</h2>
+            <span class="station-desc">${s.desc}</span>
+          </div>
+          <div class="ticket-grid">${items.map(ticketHTML).join("")}</div>
+        </div>
+      </section>`;
+  }).join("");
+}
+
+function observeTickets(){
+  const tickets = document.querySelectorAll(".ticket");
+  if(!("IntersectionObserver" in window)){
+    tickets.forEach(t => t.classList.add("in-view"));
+    return;
+  }
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if(entry.isIntersecting){
+        entry.target.style.transitionDelay = `${(i % 3) * 70}ms`;
+        entry.target.classList.add("in-view");
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold:.15 });
+  tickets.forEach(t => io.observe(t));
+}
+
+function slugify(s){
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
+
+/* Minimal markdown -> HTML: ## headings, **bold**, *italic*, `code`,
+   ``` code blocks, [links](url), ![images](src), - / 1. lists, paragraphs. */
+function mdToHtml(src){
+  if(!src) return "";
+  const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  const inline = s => esc(s)
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*([^*]+)\*/g, "<em>$1</em>")
+    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img alt="$1" src="$2">')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+
+  const lines = src.trim().split("\n");
+  let html = "", inList = false, listType = "", inCode = false, codeBuf = [];
+  const closeList = () => { if(inList){ html += `</${listType}>`; inList = false; } };
+
+  for(const raw of lines){
+    const line = raw.trimEnd();
+    if(line.startsWith("```")){
+      if(inCode){ html += `<pre><code>${esc(codeBuf.join("\n"))}</code></pre>`; codeBuf = []; inCode = false; }
+      else { closeList(); inCode = true; }
+      continue;
+    }
+    if(inCode){ codeBuf.push(raw); continue; }
+    if(!line.trim()){ closeList(); continue; }
+    let m;
+    if((m = line.match(/^(#{2,4})\s+(.*)/))){
+      closeList();
+      const lvl = m[1].length + 2;
+      html += `<h${lvl}>${inline(m[2])}</h${lvl}>`;
+      continue;
+    }
+    if((m = line.match(/^[-*]\s+(.*)/))){
+      if(!inList || listType !== "ul"){ closeList(); html += "<ul>"; inList = true; listType = "ul"; }
+      html += `<li>${inline(m[1])}</li>`;
+      continue;
+    }
+    if((m = line.match(/^\d+\.\s+(.*)/))){
+      if(!inList || listType !== "ol"){ closeList(); html += "<ol>"; inList = true; listType = "ol"; }
+      html += `<li>${inline(m[1])}</li>`;
+      continue;
+    }
+    closeList();
+    html += `<p>${inline(line)}</p>`;
+  }
+  closeList();
+  if(inCode && codeBuf.length) html += `<pre><code>${esc(codeBuf.join("\n"))}</code></pre>`;
+  return html;
+}
+
+/* ---------- detail modal ---------- */
+const modalOverlay = document.getElementById("modalOverlay");
+const modalSheet = modalOverlay.querySelector(".modal-sheet");
+let lastFocused = null;
+
+function openProject(slug, updateHash = true){
+  const p = PROJECTS.find(x => slugify(x.title) === slug);
+  if(!p) return;
+
+  document.getElementById("modalWo").textContent = p.wo;
+  const stamp = document.getElementById("modalStamp");
+  stamp.textContent = STATUS_LABEL[p.status];
+  stamp.className = `stamp ${p.status}`;
+  document.getElementById("modalTitle").textContent = p.title;
+  document.getElementById("modalSummary").textContent = p.desc;
+  document.getElementById("modalTags").innerHTML =
+    p.stack.map(t => `<span class="tag">${t}</span>`).join("");
+  document.getElementById("modalBody").innerHTML = mdToHtml(p.detail);
+
+  const gallery = document.getElementById("modalGallery");
+  const imgs = p.images || [];
+  gallery.style.display = imgs.length ? "flex" : "none";
+  gallery.innerHTML = imgs.map(img =>
+    `<a href="${img.src}" target="_blank" rel="noopener"><img src="${img.src}" alt="${img.alt || p.title}" loading="lazy"></a>`
+  ).join("");
+
+  const repoUrl = p.repo ? `https://github.com/${GH_USER}/${p.repo}` : "";
+  document.getElementById("modalLinks").innerHTML = [
+    repoUrl ? `<a class="tlink" href="${repoUrl}" target="_blank" rel="noopener">Code ↗</a>` : "",
+    p.live ? `<a class="tlink live" href="${p.live}" target="_blank" rel="noopener">Live ↗</a>` : "",
+  ].join("");
+
+  lastFocused = document.activeElement;
+  modalOverlay.classList.add("open");
+  document.body.style.overflow = "hidden";
+  modalSheet.focus();
+  if(updateHash) location.hash = `project=${slug}`;
+}
+
+function closeModal(updateHash = true){
+  if(!modalOverlay.classList.contains("open")) return;
+  modalOverlay.classList.remove("open");
+  document.body.style.overflow = "";
+  if(lastFocused) lastFocused.focus();
+  if(updateHash && location.hash) history.replaceState(null, "", location.pathname + location.search);
+}
+
+document.getElementById("modalClose").addEventListener("click", () => closeModal());
+modalOverlay.addEventListener("click", (e) => { if(e.target === modalOverlay) closeModal(); });
+document.addEventListener("keydown", (e) => {
+  if(e.key === "Escape" && modalOverlay.classList.contains("open")) closeModal();
+});
+document.addEventListener("click", (e) => {
+  if(e.target.closest("a[href]")) return; // let Code/Live/gallery links navigate normally
+  const ticket = e.target.closest(".ticket");
+  if(ticket) openProject(ticket.dataset.slug);
+});
+
+function syncFromHash(){
+  const m = location.hash.match(/^#project=([\w-]+)/);
+  if(m) openProject(m[1], false);
+  else closeModal(false);
+}
+window.addEventListener("hashchange", syncFromHash);
+
+renderStats();
+renderNav();
+renderStations();
+observeTickets();
+syncFromHash(); // opens a project's detail sheet directly if the URL links to one
+</script>
+</body>
+</html>
