@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="scroll-smooth dark">
 <head>
     <meta charset="UTF-8">
@@ -23,15 +23,15 @@
                         mono: ['JetBrains Mono', 'monospace'],
                     },
                     colors: {
-                        obsidian: '#060913',
+                        obsidian: '#060911',
                         slateDark: '#0d1322',
-                        cyanGlow: '#38bdf8',
-                        tealGlow: '#2dd4bf',
+                        cyanGlow: '#22d3ee',
+                        tealGlow: '#10b981',
                         blueGlow: '#0ea5e9',
                     },
                     boxShadow: {
-                        'neon-cyan': '0 0 20px rgba(56, 189, 248, 0.25)',
-                        'neon-teal': '0 0 20px rgba(45, 212, 191, 0.25)',
+                        'neon-cyan': '0 0 20px rgba(34, 211, 238, 0.25)',
+                        'neon-teal': '0 0 20px rgba(16, 185, 129, 0.25)',
                     }
                 }
             }
@@ -40,7 +40,7 @@
 
     <style>
         body {
-            background-color: #060913;
+            background-color: #060911;
             color: #e2e8f0;
             overflow-x: hidden;
         }
@@ -162,7 +162,7 @@
 
             <!-- CTA Button & Mobile Menu Toggle -->
             <div class="flex items-center gap-3">
-                <a href="https://www.linkedin.com/company/ap-tensor-lab" target="_blank" rel="noopener noreferrer" 
+                <a href="https://www.linkedin.com/company/aptensor-lab/" target="_blank" rel="noopener noreferrer" 
                    class="hidden sm:inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-obsidian bg-gradient-to-r from-tealGlow via-cyanGlow to-blueGlow hover:opacity-95 transition-all shadow-neon-cyan">
                     <i data-lucide="linkedin" class="w-4 h-4"></i>
                     <span>Follow on LinkedIn</span>
@@ -180,7 +180,7 @@
             <a href="#transformer" class="mobile-link block px-3 py-2 rounded-lg text-sm font-semibold text-tealGlow bg-tealGlow/10">Lab 02: Transformer Self-Attention</a>
             <a href="#workbench" class="mobile-link block px-3 py-2 rounded-lg text-sm font-medium text-slate-200 hover:bg-white/5 hover:text-tealGlow">The Workbench (Builds)</a>
             <a href="#signal" class="mobile-link block px-3 py-2 rounded-lg text-sm font-medium text-slate-200 hover:bg-white/5 hover:text-tealGlow">The AI Signal & Schedule</a>
-            <a href="https://www.linkedin.com/company/ap-tensor-lab" target="_blank" rel="noopener noreferrer" 
+            <a href="https://www.linkedin.com/company/aptensor-lab/" target="_blank" rel="noopener noreferrer" 
                class="w-full mt-2 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold text-obsidian bg-gradient-to-r from-tealGlow to-cyanGlow">
                 <i data-lucide="linkedin" class="w-4 h-4"></i>
                 <span>Follow AP Tensor Lab on LinkedIn</span>
@@ -366,12 +366,57 @@
     <!-- 4. INTERACTIVE LAB 01: PERCEPTRON & TENSOR FORWARD-PASS SIMULATOR -->
     <section id="simulator" class="py-20 border-t border-white/10 relative bg-slateDark/30">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center max-w-3xl mx-auto mb-12">
+            <div class="text-center max-w-3xl mx-auto mb-10">
                 <span class="font-mono text-xs uppercase tracking-widest text-tealGlow">Interactive Lab 01 • Single Neuron Mechanics</span>
                 <h2 class="text-3xl sm:text-4xl font-bold text-white mt-2">Perceptron & Tensor Forward-Pass Simulator</h2>
                 <p class="text-slate-400 mt-2 text-sm sm:text-base">
                     Adjust the input signals ($x_i$), synaptic weights ($w_i$), bias ($b$), and activation function ($\text{ReLU}$, $\text{Sigmoid}$, $\text{Tanh}$, $\text{GELU}$) to watch a biological axon impulse transform into a perceptron output.
                 </p>
+            </div>
+
+            <!-- HOW IT WORKS — IN PLAIN ENGLISH (LAB 01 GUIDE) -->
+            <div class="glass-card rounded-2xl p-6 sm:p-7 mb-8 border border-tealGlow/25 bg-obsidian/60">
+                <div class="flex items-center gap-2.5 mb-4 pb-3 border-b border-white/10">
+                    <span class="px-2.5 py-1 rounded-md bg-tealGlow/15 text-tealGlow font-mono text-xs font-bold border border-tealGlow/30">
+                        HOW IT WORKS — IN PLAIN ENGLISH
+                    </span>
+                    <span class="text-xs sm:text-sm text-slate-300 font-medium">How a single artificial neuron makes a decision in 3 simple steps:</span>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <!-- Step 1 -->
+                    <div class="bg-slateDark/90 p-4 rounded-xl border border-white/10">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-mono text-xs font-bold text-tealGlow">STEP 01 • WEIGHING EVIDENCE</span>
+                            <span class="font-mono text-xs text-slate-400">$x_i \times w_i$</span>
+                        </div>
+                        <h4 class="text-white font-semibold text-sm mb-1.5">Inputs ($x$) & Synaptic Weights ($w$)</h4>
+                        <p class="text-slate-400 text-xs leading-relaxed">
+                            Think of <strong class="text-slate-200">Inputs ($x$)</strong> as raw clues (like temperature or pixel brightness) and <strong class="text-tealGlow">Weights ($w$)</strong> as how much the neuron trusts each clue. A high positive weight amplifies the signal; a negative weight suppresses it.
+                        </p>
+                    </div>
+                    <!-- Step 2 -->
+                    <div class="bg-slateDark/90 p-4 rounded-xl border border-white/10">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-mono text-xs font-bold text-cyanGlow">STEP 02 • THE THRESHOLD</span>
+                            <span class="font-mono text-xs text-slate-400">$z = \sum(x \cdot w) + b$</span>
+                        </div>
+                        <h4 class="text-white font-semibold text-sm mb-1.5">Bias ($b$) & Summation ($z$)</h4>
+                        <p class="text-slate-400 text-xs leading-relaxed">
+                            All weighted signals are added together into a single score. Then, the <strong class="text-purple-300">Bias ($b$)</strong> acts like a baseline tilt—making the neuron naturally more eager or more hesitant to activate even before looking at the inputs.
+                        </p>
+                    </div>
+                    <!-- Step 3 -->
+                    <div class="bg-slateDark/90 p-4 rounded-xl border border-white/10">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-mono text-xs font-bold text-blueGlow">STEP 03 • FIRING DECISION</span>
+                            <span class="font-mono text-xs text-slate-400">$\hat{y} = \sigma(z)$</span>
+                        </div>
+                        <h4 class="text-white font-semibold text-sm mb-1.5">Non-Linear Activation $f(z)$</h4>
+                        <p class="text-slate-400 text-xs leading-relaxed">
+                            Without an activation function, a million neural layers would collapse into a flat straight line. Functions like <strong class="text-cyanGlow">ReLU</strong> (blocks negatives) or <strong class="text-cyanGlow">GELU</strong> bend the math so the network can learn curves, vision, and language.
+                        </p>
+                    </div>
+                </div>
             </div>
 
             <div class="glass-card rounded-3xl p-6 sm:p-10 border border-cyanGlow/30">
@@ -527,15 +572,60 @@
     <section id="transformer" class="py-20 border-t border-white/10 relative">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Section Header -->
-            <div class="text-center max-w-3xl mx-auto mb-12">
+            <div class="text-center max-w-3xl mx-auto mb-10">
                 <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyanGlow/10 border border-cyanGlow/30 font-mono text-xs text-cyanGlow mb-3">
                     <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-                    <span>Interactive Lab 02 • Attention(Q, K, V) = softmax(QKᵀ / √d_k · τ)V</span>
+                    <span>Interactive Lab 02 • Attention(Q, K, V) & Autoregressive Next-Token Decoder</span>
                 </div>
-                <h2 class="text-3xl sm:text-4xl font-bold text-white">Transformer Multi-Head Self-Attention Visualizer</h2>
+                <h2 class="text-3xl sm:text-4xl font-bold text-white">Transformer Self-Attention & Next-Token Predictor</h2>
                 <p class="text-slate-400 mt-2 text-sm sm:text-base">
-                    Explore how modern LLMs route information across tokens. Select a technical prompt or type your own, switch between specialized attention heads, adjust softmax temperature ($\tau$), or toggle causal masking.
+                    Explore how modern LLMs route context across tokens AND predict the next word in real time. Switch attention heads, adjust softmax temperature ($\tau$), and step the decoder forward token-by-token.
                 </p>
+            </div>
+
+            <!-- HOW IT WORKS — IN PLAIN ENGLISH (LAB 02 GUIDE) -->
+            <div class="glass-card rounded-2xl p-6 sm:p-7 mb-8 border border-cyanGlow/25 bg-obsidian/60">
+                <div class="flex items-center gap-2.5 mb-4 pb-3 border-b border-white/10">
+                    <span class="px-2.5 py-1 rounded-md bg-cyanGlow/15 text-cyanGlow font-mono text-xs font-bold border border-cyanGlow/30">
+                        HOW IT WORKS — IN PLAIN ENGLISH
+                    </span>
+                    <span class="text-xs sm:text-sm text-slate-300 font-medium">How Transformers understand context and predict the next word:</span>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <!-- Guide 1: Why Self-Attention -->
+                    <div class="bg-slateDark/90 p-4 rounded-xl border border-white/10">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-mono text-xs font-bold text-tealGlow">01 • WHY SELF-ATTENTION?</span>
+                            <i data-lucide="eye" class="w-4 h-4 text-tealGlow"></i>
+                        </div>
+                        <h4 class="text-white font-semibold text-sm mb-1.5">Words Reading Other Words</h4>
+                        <p class="text-slate-400 text-xs leading-relaxed">
+                            Older AI read sentences strictly left-to-right and forgot early words. <strong class="text-slate-200">Self-Attention</strong> lets every token look at every other token simultaneously—so in <em>"The axon transmits signals"</em>, the word <strong class="text-tealGlow">"transmits"</strong> directly links to both <strong class="text-cyanGlow">"axon"</strong> and <strong class="text-cyanGlow">"signals"</strong>.
+                        </p>
+                    </div>
+                    <!-- Guide 2: Q, K, V Analogy -->
+                    <div class="bg-slateDark/90 p-4 rounded-xl border border-white/10">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-mono text-xs font-bold text-cyanGlow">02 • THE Q, K, V SEARCH ANALOGY</span>
+                            <i data-lucide="search" class="w-4 h-4 text-cyanGlow"></i>
+                        </div>
+                        <h4 class="text-white font-semibold text-sm mb-1.5">Query, Key & Value Explained</h4>
+                        <p class="text-slate-400 text-xs leading-relaxed">
+                            Imagine a search engine: <strong class="text-tealGlow">Query ($Q$)</strong> is what a token is looking for; <strong class="text-cyanGlow">Key ($K$)</strong> is the label every other token advertises. When $Q$ and $K$ match closely (high dot-product), the token absorbs that word's actual meaning: its <strong class="text-blueGlow">Value ($V$)</strong>.
+                        </p>
+                    </div>
+                    <!-- Guide 3: Causal Mask & Temperature -->
+                    <div class="bg-slateDark/90 p-4 rounded-xl border border-white/10">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-mono text-xs font-bold text-purple-400">03 • MASKING & TEMPERATURE ($\tau$)</span>
+                            <i data-lucide="cpu" class="w-4 h-4 text-purple-400"></i>
+                        </div>
+                        <h4 class="text-white font-semibold text-sm mb-1.5">Predicting Without Cheating</h4>
+                        <p class="text-slate-400 text-xs leading-relaxed">
+                            When generating text, a <strong class="text-slate-200">Causal Mask ($-\infty$)</strong> hides future words so the model can't cheat. The <strong class="text-tealGlow">Temperature ($\tau$)</strong> controls creativity: low $\tau$ makes the model pick the #1 most likely next token (~95%+); high $\tau$ flattens probabilities so rarer words get chosen.
+                        </p>
+                    </div>
+                </div>
             </div>
 
             <!-- Main Transformer Lab Glass Container -->
@@ -550,15 +640,15 @@
                             <div>
                                 <label class="block font-mono text-[11px] uppercase tracking-wider text-slate-400 mb-1.5">Preset Technical Sequence</label>
                                 <select id="attn-preset-select" class="w-full bg-slateDark text-white font-mono text-xs rounded-xl px-3.5 py-2.5 border border-white/15 focus:outline-none focus:border-tealGlow">
-                                    <option value="0">The axon transmits signals to the perceptron tensor</option>
-                                    <option value="1">Autonomous agents query vector databases for context</option>
-                                    <option value="2">Backpropagation minimizes loss across neural weights</option>
+                                    <option value="0">The axon transmits signals to the perceptron</option>
+                                    <option value="1">Autonomous agents query vector databases for</option>
+                                    <option value="2">Backpropagation minimizes loss across neural</option>
                                 </select>
                             </div>
                             <div>
-                                <label class="block font-mono text-[11px] uppercase tracking-wider text-slate-400 mb-1.5">Or Custom Prompt (Max 8 Tokens)</label>
+                                <label class="block font-mono text-[11px] uppercase tracking-wider text-slate-400 mb-1.5">Or Custom Prompt (Up to 12 Tokens)</label>
                                 <div class="flex gap-2">
-                                    <input type="text" id="attn-custom-input" placeholder="e.g. Tensors power deep learning models" 
+                                    <input type="text" id="attn-custom-input" placeholder="e.g. Tensors power deep learning" 
                                            class="w-full bg-slateDark text-white font-mono text-xs rounded-xl px-3.5 py-2 border border-white/15 focus:outline-none focus:border-cyanGlow"/>
                                     <button id="attn-apply-btn" class="px-3.5 py-2 rounded-xl bg-tealGlow text-obsidian font-mono text-xs font-bold hover:opacity-90 shrink-0 transition-opacity">
                                         Tokenize
@@ -719,6 +809,80 @@
                             <span class="text-slate-400 text-[11px] block">Context Output $Z_i = \sum \alpha_{ij} V_j$</span>
                             <span id="vec-z" class="text-purple-300 font-bold text-xs sm:text-sm mt-1.5 block">[ 0.38, 0.64, 0.51, -0.18 ]</span>
                         </div>
+                    </div>
+                </div>
+
+                <!-- NEW: LIVE NEXT-TOKEN PREDICTION & AUTOREGRESSIVE GENERATION ENGINE -->
+                <div class="bg-gradient-to-br from-obsidian via-slateDark/95 to-obsidian rounded-2xl p-6 border border-tealGlow/40 shadow-neon-teal">
+                    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 mb-6 border-b border-white/10">
+                        <div>
+                            <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-md bg-tealGlow/15 text-tealGlow font-mono text-[11px] font-bold mb-1.5">
+                                <span class="w-2 h-2 rounded-full bg-tealGlow animate-ping"></span>
+                                AUTOREGRESSIVE DECODER ENGINE • LM HEAD
+                            </div>
+                            <h3 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+                                Next-Token Prediction ($P(w_{N+1} \mid w_1 \dots w_N) = \text{softmax}(Z_N W_{\text{vocab}} / \tau)$)
+                            </h3>
+                            <p class="text-xs text-slate-400 font-mono mt-0.5">
+                                The final token's context vector <span id="pred-last-token" class="text-cyanGlow font-bold">Z_N ("perceptron")</span> projects onto the vocabulary to predict what word comes next.
+                            </p>
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-2.5 shrink-0">
+                            <button id="append-top-token-btn" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold text-obsidian bg-gradient-to-r from-tealGlow to-cyanGlow hover:opacity-95 shadow-neon-teal transition-all">
+                                <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                                <span>+ Append Top Token (Step Forward)</span>
+                            </button>
+                            <button id="reset-sequence-btn" class="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl font-mono text-xs font-semibold text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all">
+                                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                                <span>Reset</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Live Sequence Ribbon & Final Z_N Projection Telemetry -->
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                        
+                        <!-- Left 5 Cols: Active Sequence Stream & Final Hidden State -->
+                        <div class="lg:col-span-5 space-y-4">
+                            <div class="bg-obsidian/90 p-4 rounded-xl border border-white/10">
+                                <div class="flex items-center justify-between text-[11px] font-mono text-slate-400 mb-2">
+                                    <span>ACTIVE CONTEXT WINDOW (<span id="seq-len-badge" class="text-tealGlow">7</span>/12 TOKENS)</span>
+                                    <span class="text-cyanGlow">Autoregressive Loop</span>
+                                </div>
+                                <div id="live-sequence-chips" class="flex flex-wrap gap-1.5 items-center min-h-[44px]">
+                                    <!-- Populated via JS -->
+                                </div>
+                            </div>
+
+                            <div class="bg-obsidian/90 p-4 rounded-xl border border-purple-400/25 font-mono text-xs space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-slate-400 text-[11px]">Final Hidden Context State ($Z_N$):</span>
+                                    <span id="pred-head-badge" class="text-[10px] px-2 py-0.5 rounded bg-purple-500/20 text-purple-300">Head 01</span>
+                                </div>
+                                <div id="pred-zn-vector" class="text-purple-300 font-bold text-xs tracking-wider">
+                                    Z_N = [ 0.42, -0.19, 0.78, 0.31 ]
+                                </div>
+                                <p class="text-[11px] text-slate-400 leading-relaxed pt-1 border-t border-white/5 font-sans">
+                                    💡 <strong class="text-white">Try it:</strong> Drag the <strong class="text-tealGlow">Softmax Temperature ($\tau$)</strong> slider above! Low $\tau$ (0.2) spikes the top token to <span class="text-tealGlow font-mono">&gt;95%</span>; high $\tau$ (2.5) flattens the bars. Click any bar to append that token!
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Right 7 Cols: Top-5 Candidate Next Tokens Horizontal Bar Chart -->
+                        <div class="lg:col-span-7 bg-obsidian/90 p-5 rounded-xl border border-white/10">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="font-mono text-xs font-bold text-white uppercase tracking-wider">
+                                    Top-5 Candidate Next Tokens (Click any bar to append)
+                                </span>
+                                <span id="pred-temp-readout" class="font-mono text-xs text-tealGlow">τ = 0.80</span>
+                            </div>
+
+                            <div id="next-token-bars" class="space-y-3">
+                                <!-- Dynamically populated Top-5 probability bars -->
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
@@ -1064,9 +1228,9 @@
         // INTERACTIVE LAB 02: TRANSFORMER SELF-ATTENTION VISUALIZER
         // ============================================================
         const presetSentences = [
-            "The axon transmits signals to the perceptron tensor",
-            "Autonomous agents query vector databases for context",
-            "Backpropagation minimizes loss across neural weights"
+            "The axon transmits signals to the perceptron",
+            "Autonomous agents query vector databases for",
+            "Backpropagation minimizes loss across neural"
         ];
 
         const headDescriptions = [
@@ -1076,13 +1240,295 @@
             "Head 04 (Global Multi-Head Avg): Ensemble representation blending all specialized subspaces."
         ];
 
+        // Context-Aware Sequence & Grammar Engine for realistic Next-Token Prediction
+        const phraseContinuations = {
+            // Preset 1 chain: "The axon transmits signals to the perceptron -> layer -> to -> trigger -> nonlinear -> activations"
+            "the_perceptron": [
+                { token: "layer", logit: 4.1 },
+                { token: "node", logit: 3.3 },
+                { token: "weights", logit: 2.8 },
+                { token: "unit", logit: 2.3 },
+                { token: "circuit", logit: 1.9 }
+            ],
+            "perceptron_layer": [
+                { token: "to", logit: 4.0 },
+                { token: "via", logit: 3.4 },
+                { token: "and", logit: 2.7 },
+                { token: "using", logit: 2.2 },
+                { token: "during", logit: 1.8 }
+            ],
+            "layer_to": [
+                { token: "trigger", logit: 4.1 },
+                { token: "compute", logit: 3.5 },
+                { token: "produce", logit: 2.9 },
+                { token: "fire", logit: 2.4 },
+                { token: "propagate", logit: 1.9 }
+            ],
+            "to_trigger": [
+                { token: "nonlinear", logit: 4.2 },
+                { token: "synaptic", logit: 3.4 },
+                { token: "downstream", logit: 2.8 },
+                { token: "neural", logit: 2.3 },
+                { token: "tensor", logit: 1.9 }
+            ],
+            "trigger_nonlinear": [
+                { token: "activations.", logit: 4.3 },
+                { token: "outputs.", logit: 3.5 },
+                { token: "decisions.", logit: 2.8 },
+                { token: "gradients.", logit: 2.2 },
+                { token: "responses.", logit: 1.8 }
+            ],
+
+            // Preset 2 chain: "Autonomous agents query vector databases for -> semantic -> context -> before -> generating -> responses."
+            "databases_for": [
+                { token: "semantic", logit: 4.2 },
+                { token: "relevant", logit: 3.5 },
+                { token: "dense", logit: 2.9 },
+                { token: "grounded", logit: 2.4 },
+                { token: "realtime", logit: 1.9 }
+            ],
+            "for_semantic": [
+                { token: "context", logit: 4.3 },
+                { token: "embeddings", logit: 3.4 },
+                { token: "knowledge", logit: 2.8 },
+                { token: "documents", logit: 2.3 },
+                { token: "chunks", logit: 1.9 }
+            ],
+            "semantic_context": [
+                { token: "before", logit: 4.0 },
+                { token: "during", logit: 3.3 },
+                { token: "when", logit: 2.7 },
+                { token: "while", logit: 2.2 },
+                { token: "for", logit: 1.8 }
+            ],
+            "context_before": [
+                { token: "generating", logit: 4.2 },
+                { token: "synthesizing", logit: 3.4 },
+                { token: "streaming", logit: 2.8 },
+                { token: "returning", logit: 2.3 },
+                { token: "Executing", logit: 1.8 }
+            ],
+            "before_generating": [
+                { token: "responses.", logit: 4.3 },
+                { token: "answers.", logit: 3.5 },
+                { token: "actions.", logit: 2.9 },
+                { token: "tokens.", logit: 2.3 },
+                { token: "decisions.", logit: 1.8 }
+            ],
+
+            // Preset 3 chain: "Backpropagation minimizes loss across neural -> network -> layers -> by -> updating -> weights."
+            "across_neural": [
+                { token: "network", logit: 4.2 },
+                { token: "hidden", logit: 3.4 },
+                { token: "transformer", logit: 2.9 },
+                { token: "perceptron", logit: 2.3 },
+                { token: "deep", logit: 1.9 }
+            ],
+            "neural_network": [
+                { token: "layers", logit: 4.1 },
+                { token: "weights", logit: 3.5 },
+                { token: "parameters", logit: 2.9 },
+                { token: "tensors", logit: 2.4 },
+                { token: "graphs", logit: 1.8 }
+            ],
+            "network_layers": [
+                { token: "by", logit: 4.1 },
+                { token: "via", logit: 3.3 },
+                { token: "through", logit: 2.8 },
+                { token: "while", logit: 2.2 },
+                { token: "after", logit: 1.8 }
+            ],
+            "layers_by": [
+                { token: "updating", logit: 4.2 },
+                { token: "adjusting", logit: 3.5 },
+                { token: "computing", logit: 2.9 },
+                { token: "scaling", logit: 2.3 },
+                { token: "optimizing", logit: 1.9 }
+            ],
+            "by_updating": [
+                { token: "weights.", logit: 4.3 },
+                { token: "gradients.", logit: 3.6 },
+                { token: "parameters.", logit: 3.0 },
+                { token: "tensors.", logit: 2.3 },
+                { token: "biases.", logit: 1.8 }
+            ]
+        };
+
+        // Grammatical & Domain Single-Word Lookup + Smart POS Fallbacks for Custom Prompts
+        const nextTokenKnowledgeBase = {
+            "the": [
+                { token: "transformer", logit: 3.8 },
+                { token: "perceptron", logit: 3.4 },
+                { token: "axon", logit: 3.0 },
+                { token: "attention", logit: 2.5 },
+                { token: "neural", logit: 2.1 }
+            ],
+            "a": [
+                { token: "multi-head", logit: 3.8 },
+                { token: "deep", logit: 3.3 },
+                { token: "neural", logit: 2.9 },
+                { token: "vector", logit: 2.4 },
+                { token: "latent", logit: 2.0 }
+            ],
+            "axon": [
+                { token: "transmits", logit: 3.9 },
+                { token: "conducts", logit: 3.1 },
+                { token: "routes", logit: 2.6 },
+                { token: "propagates", logit: 2.2 },
+                { token: "fires", logit: 1.8 }
+            ],
+            "transmits": [
+                { token: "signals", logit: 4.0 },
+                { token: "impulses", logit: 3.2 },
+                { token: "activations", logit: 2.6 },
+                { token: "tensors", logit: 2.1 },
+                { token: "information", logit: 1.7 }
+            ],
+            "signals": [
+                { token: "to", logit: 3.9 },
+                { token: "across", logit: 3.1 },
+                { token: "through", logit: 2.6 },
+                { token: "into", logit: 2.1 },
+                { token: "efficiently", logit: 1.7 }
+            ],
+            "to": [
+                { token: "the", logit: 3.8 },
+                { token: "compute", logit: 3.2 },
+                { token: "predict", logit: 2.7 },
+                { token: "downstream", logit: 2.2 },
+                { token: "optimize", logit: 1.8 }
+            ],
+            "tensors": [
+                { token: "power", logit: 3.9 },
+                { token: "encode", logit: 3.3 },
+                { token: "represent", logit: 2.8 },
+                { token: "accelerate", logit: 2.3 },
+                { token: "transform", logit: 1.9 }
+            ],
+            "power": [
+                { token: "deep", logit: 3.9 },
+                { token: "modern", logit: 3.3 },
+                { token: "neural", logit: 2.8 },
+                { token: "autonomous", logit: 2.3 },
+                { token: "generative", logit: 1.9 }
+            ],
+            "deep": [
+                { token: "learning", logit: 4.2 },
+                { token: "neural", logit: 3.4 },
+                { token: "transformer", logit: 2.8 },
+                { token: "representations", logit: 2.2 },
+                { token: "architectures", logit: 1.8 }
+            ],
+            "learning": [
+                { token: "models", logit: 4.0 },
+                { token: "architectures", logit: 3.3 },
+                { token: "pipelines", logit: 2.8 },
+                { token: "systems", logit: 2.3 },
+                { token: "algorithms", logit: 1.8 }
+            ],
+            "models": [
+                { token: "in", logit: 3.8 },
+                { token: "with", logit: 3.2 },
+                { token: "across", logit: 2.7 },
+                { token: "for", logit: 2.3 },
+                { token: "efficiently.", logit: 1.9 }
+            ],
+            "in": [
+                { token: "production.", logit: 4.0 },
+                { token: "realtime.", logit: 3.4 },
+                { token: "parallel.", logit: 2.8 },
+                { token: "latent", logit: 2.3 },
+                { token: "high-dimensional", logit: 1.9 }
+            ],
+            "attention": [
+                { token: "weights", logit: 3.9 },
+                { token: "heads", logit: 3.4 },
+                { token: "mechanisms", logit: 2.9 },
+                { token: "matrices", logit: 2.3 },
+                { token: "scores", logit: 1.9 }
+            ]
+        };
+
+        // Smart Grammatical Part-of-Speech Predictor when a user types custom words not in the dictionary
+        function predictByGrammarContext(tokens) {
+            const last = (tokens[tokens.length - 1] || "").toLowerCase().replace(/[^a-z]/g, '');
+            const prev = (tokens[tokens.length - 2] || "").toLowerCase().replace(/[^a-z]/g, '');
+
+            // If last word ends with a period, suggest a new sentence starter
+            if ((tokens[tokens.length - 1] || "").endsWith('.')) {
+                return [
+                    { token: "Each", logit: 3.8 },
+                    { token: "This", logit: 3.3 },
+                    { token: "Modern", logit: 2.8 },
+                    { token: "Meanwhile,", logit: 2.3 },
+                    { token: "The", logit: 1.9 }
+                ];
+            }
+
+            // 1. Prepositions & Determiners -> Expect an Adjective or Technical Noun
+            const prepositions = ['in', 'on', 'at', 'by', 'with', 'from', 'into', 'across', 'through', 'between', 'without', 'of', 'for', 'via', 'using'];
+            if (prepositions.includes(last)) {
+                return [
+                    { token: "high-dimensional", logit: 3.9 },
+                    { token: "latent", logit: 3.3 },
+                    { token: "neural", logit: 2.8 },
+                    { token: "distributed", logit: 2.3 },
+                    { token: "parallel", logit: 1.9 }
+                ];
+            }
+
+            // 2. Adjectives -> Expect a Technical Noun
+            const adjectives = ['highdimensional', 'latent', 'neural', 'distributed', 'parallel', 'semantic', 'autonomous', 'local', 'dense', 'sparse', 'nonlinear', 'modern', 'applied', 'generative', 'deep', 'hidden', 'synaptic'];
+            if (adjectives.includes(last)) {
+                return [
+                    { token: "representations", logit: 3.9 },
+                    { token: "manifolds", logit: 3.3 },
+                    { token: "pipelines", logit: 2.8 },
+                    { token: "architectures", logit: 2.3 },
+                    { token: "embeddings", logit: 1.9 }
+                ];
+            }
+
+            // 3. Verbs -> Expect an Object Noun or Adverb
+            const verbs = ['computes', 'calculates', 'learns', 'predicts', 'generates', 'transforms', 'optimizes', 'processes', 'encodes', 'decodes', 'routes', 'builds', 'trains', 'evaluates', 'maps', 'projects'];
+            if (verbs.includes(last) || (last.endsWith('es') && !last.endsWith('bases')) || last.endsWith('ing')) {
+                return [
+                    { token: "contextual", logit: 3.9 },
+                    { token: "token", logit: 3.3 },
+                    { token: "multi-head", logit: 2.8 },
+                    { token: "vector", logit: 2.3 },
+                    { token: "structured", logit: 1.9 }
+                ];
+            }
+
+            // 4. Plural or Singular Technical Nouns -> Expect an Action Verb (if early in sentence) or Preposition (if later)
+            if (tokens.length <= 3) {
+                return [
+                    { token: "dynamically", logit: 3.8 },
+                    { token: "compute", logit: 3.4 },
+                    { token: "project", logit: 2.9 },
+                    { token: "encode", logit: 2.4 },
+                    { token: "optimize", logit: 1.9 }
+                ];
+            } else {
+                return [
+                    { token: "across", logit: 3.8 },
+                    { token: "within", logit: 3.3 },
+                    { token: "through", logit: 2.8 },
+                    { token: "to", logit: 2.3 },
+                    { token: "efficiently.", logit: 1.9 }
+                ];
+            }
+        }
+
         let attnState = {
             tokens: presetSentences[0].split(' '),
             selectedTokenIdx: 1, // default "axon"
             headIdx: 0,
             temperature: 0.8,
             causalMask: false,
-            probsMatrix: []
+            probsMatrix: [],
+            topCandidates: []
         };
 
         // Deterministic pseudo-embedding generator for any token string + head
@@ -1378,6 +1824,145 @@
             document.getElementById('vec-z').textContent = fmtVec(zOut);
         }
 
+        // Compute & Render Next-Token Prediction Bar Chart (Autoregressive Decoder)
+        function renderNextTokenPrediction() {
+            const { tokens, headIdx, temperature, probsMatrix } = attnState;
+            const N = tokens.length;
+            const lastIdx = N - 1;
+            const lastToken = tokens[lastIdx] || 'tensor';
+            const cleanLast = lastToken.toLowerCase().replace(/[^a-z0-9]/g, '');
+            const lastWeights = probsMatrix[lastIdx] || [];
+
+            // Compute final token's context vector Z_N
+            const zN = [0, 0, 0, 0];
+            tokens.forEach((t, j) => {
+                const vj = getTokenVectors(t, j, headIdx).v;
+                const w = lastWeights[j] || 0;
+                for (let d = 0; d < 4; d++) zN[d] += w * vj[d];
+            });
+
+            // Update UI telemetry for Z_N
+            document.getElementById('pred-last-token').textContent = `Z_${N} ("${lastToken}")`;
+            document.getElementById('seq-len-badge').textContent = N;
+            document.getElementById('pred-head-badge').textContent = `Head 0${headIdx + 1}`;
+            document.getElementById('pred-zn-vector').textContent = `Z_${N} = [ ${zN.map(v => v.toFixed(2)).join(', ')} ]`;
+            document.getElementById('pred-temp-readout').textContent = `τ = ${temperature.toFixed(2)}`;
+
+            // Render Active Sequence Chips
+            const chipsContainer = document.getElementById('live-sequence-chips');
+            chipsContainer.innerHTML = tokens.map((tok, idx) => {
+                const isLast = idx === lastIdx;
+                return `
+                    <span class="px-2.5 py-1 rounded-lg font-mono text-xs transition-all cursor-pointer ${isLast ? 'bg-tealGlow/20 text-tealGlow border border-tealGlow/50 font-bold shadow-neon-teal' : 'bg-slateDark text-slate-300 border border-white/10 hover:border-cyanGlow/40'}"
+                          onclick="selectAttentionToken(${idx})" title="Click to inspect token ${idx}">
+                        ${tok}
+                    </span>
+                `;
+            }).join('') + `
+                <span class="px-2.5 py-1 rounded-lg font-mono text-xs bg-cyanGlow/10 text-cyanGlow border border-dashed border-cyanGlow/50 animate-pulse">
+                    [next?]
+                </span>
+            `;
+
+            // 1. Check 2-gram contextual phrase continuations first (e.g., "the_perceptron", "databases_for")
+            const prevTokenClean = N >= 2 ? tokens[N - 2].toLowerCase().replace(/[^a-z0-9]/g, '') : '';
+            const bigramKey = `${prevTokenClean}_${cleanLast}`;
+
+            let baseList = phraseContinuations[bigramKey] || nextTokenKnowledgeBase[cleanLast];
+
+            // 2. If not in explicit bigram/unigram dictionaries, use the smart Grammatical POS Context Engine
+            if (!baseList) {
+                baseList = predictByGrammarContext(tokens);
+            }
+
+            // Subtle, realistic modulation from attention head & context vector (keeps top grammatical choice intact)
+            const headMod = [
+                [0.12, 0.04, -0.02, 0.0, -0.05],
+                [0.05, 0.14, 0.08, -0.02, 0.0],
+                [0.08, -0.04, 0.15, 0.05, -0.02],
+                [0.10, 0.06, 0.04, 0.02, 0.0]
+            ][headIdx];
+
+            const rawLogits = baseList.map((item, idx) => {
+                const contextShift = (zN[idx % 4] * 0.12) + headMod[idx];
+                return {
+                    token: item.token,
+                    rawLogit: item.logit + contextShift
+                };
+            });
+
+            // Apply Temperature Scaling: logit / tau, then Softmax over vocabulary slice
+            const tau = Math.max(0.15, temperature);
+            let maxL = -Infinity;
+            rawLogits.forEach(c => {
+                const scaled = c.rawLogit / tau;
+                if (scaled > maxL) maxL = scaled;
+            });
+
+            // Include a small background mass for "other vocabulary tokens"
+            let sumExp = Math.exp((0.8 / tau) - maxL);
+            const expItems = rawLogits.map(c => {
+                const e = Math.exp((c.rawLogit / tau) - maxL);
+                sumExp += e;
+                return { ...c, expVal: e };
+            });
+
+            const candidatesWithProbs = expItems.map(c => ({
+                token: c.token,
+                prob: c.expVal / sumExp
+            })).sort((a, b) => b.prob - a.prob);
+
+            attnState.topCandidates = candidatesWithProbs;
+
+            // Render Top-5 Horizontal Probability Bars
+            const barsContainer = document.getElementById('next-token-bars');
+            barsContainer.innerHTML = candidatesWithProbs.map((cand, rank) => {
+                const pct = (cand.prob * 100).toFixed(1);
+                const widthPct = Math.max(4, Math.min(100, cand.prob * 100));
+                const isTop = rank === 0;
+                return `
+                    <div class="next-token-bar-row group cursor-pointer bg-slateDark/80 hover:bg-slateDark p-2.5 rounded-xl border ${isTop ? 'border-tealGlow/40' : 'border-white/5 hover:border-cyanGlow/30'} transition-all"
+                         data-cand-token="${cand.token}">
+                        <div class="flex items-center justify-between text-xs font-mono mb-1.5">
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] px-1.5 py-0.5 rounded ${isTop ? 'bg-tealGlow text-obsidian font-bold' : 'bg-white/5 text-slate-400'}">
+                                    #${rank + 1}
+                                </span>
+                                <span class="${isTop ? 'text-tealGlow font-bold' : 'text-white'} group-hover:text-cyanGlow transition-colors">
+                                    "${cand.token}"
+                                </span>
+                                ${isTop ? '<span class="text-[10px] text-tealGlow/80 hidden sm:inline">← Argmax Prediction</span>' : ''}
+                            </div>
+                            <span class="${isTop ? 'text-tealGlow font-bold' : 'text-slate-300'}">${pct}%</span>
+                        </div>
+                        <div class="w-full h-2 bg-obsidian rounded-full overflow-hidden">
+                            <div class="h-full rounded-full transition-all duration-300 ${isTop ? 'bg-gradient-to-r from-tealGlow to-cyanGlow' : 'bg-cyanGlow/50'}"
+                                 style="width: ${widthPct}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Click listener on each candidate bar to append that specific token
+            barsContainer.querySelectorAll('.next-token-bar-row').forEach(row => {
+                row.addEventListener('click', () => {
+                    appendTokenToSequence(row.getAttribute('data-cand-token'));
+                });
+            });
+        }
+
+        // Autoregressive Step: Append a predicted token to the sequence and recompute attention
+        function appendTokenToSequence(tokenStr) {
+            if (attnState.tokens.length >= 12) {
+                showToast('Context window limit (12 tokens) reached! Click Reset to start fresh.');
+                return;
+            }
+            attnState.tokens.push(tokenStr);
+            attnState.selectedTokenIdx = attnState.tokens.length - 1;
+            refreshTransformerVisualizer();
+            showToast(`Appended "${tokenStr}" → Re-computed Attention & Next-Token Logits!`);
+        }
+
         function selectAttentionToken(idx) {
             if (idx < 0 || idx >= attnState.tokens.length) return;
             attnState.selectedTokenIdx = idx;
@@ -1394,13 +1979,14 @@
             renderBipartiteSVG();
             renderHeatmapMatrix();
             updateVectorInspector();
+            renderNextTokenPrediction();
         }
 
         // Event Listeners for Transformer Visualizer Controls
         document.getElementById('attn-preset-select').addEventListener('change', (e) => {
             const sentence = presetSentences[parseInt(e.target.value, 10)];
-            attnState.tokens = sentence.split(/\s+/).slice(0, 8);
-            attnState.selectedTokenIdx = Math.min(1, attnState.tokens.length - 1);
+            attnState.tokens = sentence.split(/\s+/).slice(0, 12);
+            attnState.selectedTokenIdx = attnState.tokens.length - 1;
             document.getElementById('attn-custom-input').value = '';
             refreshTransformerVisualizer();
         });
@@ -1411,16 +1997,31 @@
                 showToast('Please enter a short prompt first.');
                 return;
             }
-            const words = raw.split(/\s+/).slice(0, 8);
+            const words = raw.split(/\s+/).slice(0, 12);
             attnState.tokens = words;
-            attnState.selectedTokenIdx = 0;
+            attnState.selectedTokenIdx = words.length - 1;
             refreshTransformerVisualizer();
-            showToast(`Tokenized ${words.length} tokens into Self-Attention Matrix!`);
+            showToast(`Tokenized ${words.length} tokens into Self-Attention & Decoder!`);
         }
 
         document.getElementById('attn-apply-btn').addEventListener('click', applyCustomPrompt);
         document.getElementById('attn-custom-input').addEventListener('keydown', (e) => {
             if (e.key === 'Enter') applyCustomPrompt();
+        });
+
+        // Append Top Token Button & Reset Sequence Button
+        document.getElementById('append-top-token-btn').addEventListener('click', () => {
+            if (attnState.topCandidates && attnState.topCandidates.length > 0) {
+                appendTokenToSequence(attnState.topCandidates[0].token);
+            }
+        });
+
+        document.getElementById('reset-sequence-btn').addEventListener('click', () => {
+            const presetIdx = parseInt(document.getElementById('attn-preset-select').value, 10) || 0;
+            attnState.tokens = presetSentences[presetIdx].split(/\s+/);
+            attnState.selectedTokenIdx = attnState.tokens.length - 1;
+            refreshTransformerVisualizer();
+            showToast('Sequence reset to original prompt.');
         });
 
         // Attention Head Buttons
@@ -1467,25 +2068,25 @@
                 id: 1,
                 category: 'agentic-ai',
                 badge: 'Agentic AI • Google ADK',
-                title: 'Autonomous Incident Investigator with ADK & Gemini',
-                desc: 'Multi-agent diagnostic pipeline that ingests real-time server telemetry, correlates anomaly stack traces, and proposes root-cause patches.',
+                title: 'Factory Guardian: AI Incident Investigator',
+                desc: 'Autonomous industrial incident investigator built with Google ADK and Gemini that ingests real-time factory telemetry, correlates anomaly logs, and proposes root-cause fixes.',
                 tags: ['Google ADK', 'Gemini', 'Python', 'Agents'],
                 takeaways: [
-                    'Structured deterministic tool-calling to prevent hallucinated shell commands.',
+                    'Structured deterministic tool-calling for real-time industrial telemetry inspection.',
                     'Sub-second log chunking with sliding time-window context management.',
-                    'Automated severity scoring and human-in-the-loop approval gates.'
+                    'Automated severity scoring and human-in-the-loop safety approval gates.'
                 ]
             },
             {
                 id: 2,
                 category: 'data-systems',
                 badge: 'Data Systems • Full-Stack AI',
-                title: 'Runlytic Time-Series & Strava AI Coach',
-                desc: 'End-to-end analytics engine transforming raw GPS, heart-rate, and cadence streams from Strava OAuth into personalized Gemini coaching feedback.',
+                title: 'Runlytic: Strava Telemetry & Gemini AI Coach',
+                desc: 'End-to-end analytics platform (Next.js + FastAPI) transforming raw GPS, heart-rate, and cadence streams from Strava OAuth into personalized Gemini coaching feedback.',
                 tags: ['Next.js', 'FastAPI', 'Strava API', 'Gemini'],
                 takeaways: [
                     'Downsampled noisy workout telemetry into compact statistical tensors.',
-                    'Prompt-engineered deterministic JSON schemas for pace & zone charts.',
+                    'Prompt-engineered deterministic JSON schemas for pace & heart-rate zone charts.',
                     'Async Python backend with streaming token delivery to React dashboard.'
                 ]
             },
@@ -1493,11 +2094,11 @@
                 id: 3,
                 category: 'computer-vision',
                 badge: 'Computer Vision • Edge Inference',
-                title: 'Local Vision & Skeletal Edge Inference Pipeline',
-                desc: 'Combining MediaPipe skeletal landmark extraction with lightweight local neural classifiers for zero-latency spatial interaction.',
+                title: 'e-Spec: Local Vision & Skeletal Edge Pipeline',
+                desc: 'Real-time computer vision inspection & skeletal tracking pipeline combining MediaPipe landmark extraction with lightweight local neural classifiers for zero-latency inference.',
                 tags: ['MediaPipe', 'OpenCV', 'PyTorch', 'Edge AI'],
                 takeaways: [
-                    'Achieved 60+ FPS 3D landmark extraction on consumer hardware.',
+                    'Achieved 60+ FPS 3D landmark extraction on consumer edge hardware.',
                     'View-invariant coordinate normalization across varying camera angles.',
                     '100% local execution with zero cloud API round-trip latency.'
                 ]
@@ -1506,13 +2107,13 @@
                 id: 4,
                 category: 'edge-iot',
                 badge: 'Edge IoT • MQTT Telemetry',
-                title: '31-Slot IoT Telemetry & Automated MQTT Dispenser',
-                desc: 'Hardware-software integration bridging microcontrollers, real-time MQTT message brokers, and cloud state synchronization for automated dispensing.',
+                title: '31-Slot Automated IoT Medicine Dispenser',
+                desc: 'Hardware-software healthcare system bridging microcontrollers, real-time MQTT message brokers, and cloud state synchronization for automated 31-slot medication dispensing.',
                 tags: ['MQTT', 'IoT', 'Embedded', 'Real-Time'],
                 takeaways: [
-                    'Fault-tolerant QoS MQTT pub/sub architecture with instant state ack.',
+                    'Fault-tolerant QoS MQTT pub/sub architecture with instant state acknowledgement.',
                     '31-slot indexed hardware actuation with optical sensor verification.',
-                    'Real-time telemetry logging for predictive maintenance alerts.'
+                    'Real-time adherence telemetry logging and missed-dose alerting.'
                 ]
             },
             {
