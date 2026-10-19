@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPT Interactive Walkthrough — From Tokens to Generation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        slate: {
+                            850: '#151e2e',
+                            900: '#0f172a',
+                            950: '#080d1a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #080d1a;
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+        .glass-card {
+            background: rgba(15, 23, 42, 0.78);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(148, 163, 184, 0.14);
+        }
+        .vector-pill {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .vector-pill:hover {
+            transform: translateY(-2px);
+        }
+        .heatmap-cell {
+            transition: all 0.25s ease;
+        }
+        .heatmap-cell:hover {
+            transform: scale(1.06);
+            z-index: 10;
+        }
+        @keyframes pulseFlow {
+            0%, 100% { opacity: 0.35; }
+            50% { opacity: 1; }
+        }
+        .flow-arrow {
+            animation: pulseFlow 2s infinite ease-in-out;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans antialiased selection:bg-indigo-500 selection:text-white">
+
+    <!-- Top Header -->
+    <header class="border-b border-slate-800/80 bg-slate-950/90 sticky top-0 z-40 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/20 font-mono font-bold text-white text-lg">
+                    GPT
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-lg font-bold tracking-tight text-white">Interactive GPT Walkthrough</h1>
+                        <span class="text-[11px] font-mono uppercase px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">d_model = 4</span>
+                    </div>
+                    <p class="text-xs text-slate-400">Visualizing Decoder-Only Transformer Mechanics Step-by-Step</p>
+                </div>
+            </div>
+
+            <!-- Global Prompt Bar -->
+            <div class="flex flex-wrap items-center gap-2 bg-slate-900/90 p-1.5 rounded-xl border border-slate-800">
+                <span class="text-xs font-medium text-slate-400 pl-2">Prompt:</span>
+                <input id="customPromptInput" type="text" maxlength="42" value="The robot learned to" 
+                    class="bg-slate-950 text-sm text-white font-mono px-3 py-1.5 rounded-lg border border-slate-700/80 focus:outline-none focus:border-indigo-500 w-48 sm:w-56"
+                    placeholder="Type up to 6 words..." />
+                <button onclick="applyCustomPrompt()" class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-3 py-1.5 rounded-lg transition">
+                    Update
+                </button>
+                <select id="presetSelect" onchange="selectPreset(this.value)" class="bg-slate-800 text-xs text-slate-200 px-2.5 py-1.5 rounded-lg border border-slate-700 focus:outline-none">
+                    <option value="The robot learned to">Preset: "The robot learned to"</option>
+                    <option value="Artificial intelligence can">Preset: "Artificial intelligence can"</option>
+                    <option value="Neural networks process">Preset: "Neural networks process"</option>
+                    <option value="Space explorers discovered">Preset: "Space explorers discovered"</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Step Navigation Tabs -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-900">
+            <nav class="flex overflow-x-auto py-2 gap-1.5 no-scrollbar" id="stepTabs">
+                <!-- Populated by JS -->
+            </nav>
+        </div>
+    </header>
+
+    <!-- Active Sequence Banner -->
+    <div class="bg-slate-900/60 border-b border-slate-800/60">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-xs uppercase tracking-wider font-mono text-slate-400">Active Token Stream:</span>
+                <div id="globalTokenStream" class="flex items-center gap-1.5 flex-wrap"></div>
+            </div>
+            <div class="text-xs text-slate-400 font-mono" id="sequenceStats">Length: 4 tokens</div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- STEP 1: TOKENIZATION & EMBEDDINGS -->
+        <section id="step-1" class="step-panel space-y-6">
+            <div class="glass-card rounded-2xl p-6">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+                    <div>
+                        <span class="text-xs font-mono uppercase tracking-wider text-indigo-400">Step 1 of 5 • Input Representation</span>
+                        <h2 class="text-2xl font-bold text-white mt-1">Tokenization, Embeddings & Positional Encoding</h2>
+                        <p class="text-sm text-slate-300 mt-1 max-w-3xl">
+                            Language models cannot read raw strings. Text is split into subword/word <strong>Tokens</strong>, mapped to integer IDs in a vocabulary, converted into dense semantic vectors (<code class="text-indigo-300">E</code>), and summed with sinusoidal <strong>Positional Encodings</strong> (<code class="text-amber-300">P</code>) so the model knows word order.
+                        </p>
+                    </div>
+                    <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 font-mono text-xs text-slate-300 shrink-0">
+                        <div class="text-slate-400 mb-1">Mathematical Formulation:</div>
+                        <div class="text-sm text-white">x<sub>i</sub> = Embed(token<sub>i</sub>) + PosEnc(i)</div>
+                        <div class="text-[11px] text-slate-400 mt-1">where x<sub>i</sub> ∈ ℝ<sup>4</sup> (simplified 4D space)</div>
+                    </div>
+                </div>
+
+                <!-- Interactive Token Breakdown Grid -->
+                <div class="mt-6">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-sm font-semibold text-slate-200 uppercase tracking-wider font-mono">Token-by-Token Vector Addition (4D Simplified)</h3>
+                        <span class="text-xs text-slate-400">Click any token card to highlight its vector dimensions</span>
+                    </div>
+
+                    <div id="step1TokenGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <!-- Rendered dynamically -->
+                    </div>
+                </div>
+
+                <!-- Positional Encoding Intuition Wave Panel -->
+                <div class="mt-6 bg-slate-900/70 border border-slate-800/90 rounded-xl p-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                        <div>
+                            <h4 class="text-sm font-semibold text-white flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                                Why Positional Encoding?
+                            </h4>
+                            <p class="text-xs text-slate-400">Without positional vectors, "The robot learned" and "learned robot The" look identical to self-attention. Sine/cosine waves give each position a unique geometric signature.</p>
+                        </div>
+                        <div class="font-mono text-xs text-amber-300 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-lg shrink-0">
+                            PE(pos, 2i) = sin(pos / 10000<sup>2i/d</sup>)
+                        </div>
+                    </div>
+                    <div id="posEncodingBars" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- STEP 2: SELF-ATTENTION -->
+        <section id="step-2" class="step-panel hidden space-y-6">
+            <div class="glass-card rounded-2xl p-6">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+                    <div>
+                        <span class="text-xs font-mono uppercase tracking-wider text-purple-400">Step 2 of 5 • Contextual Routing</span>
+                        <h2 class="text-2xl font-bold text-white mt-1">Scaled Dot-Product Self-Attention & Causal Masking</h2>
+                        <p class="text-sm text-slate-300 mt-1 max-w-3xl">
+                            Each token projects its input vector into three distinct roles: <strong>Query (Q)</strong> <em>"What am I looking for?"</em>, <strong>Key (K)</strong> <em>"What label do I advertise?"</em>, and <strong>Value (V)</strong> <em>"What content do I pass along?"</em>. The Causal Mask prevents tokens from peeking at future words.
+                        </p>
+                    </div>
+                    <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 font-mono text-xs text-slate-300 shrink-0">
+                        <div class="text-slate-400 mb-1">Attention Equation:</div>
+                        <div class="text-sm text-white">Attention(Q,K,V) = softmax((QK<sup>T</sup> / √d<sub>k</sub>) + M) V</div>
+                    </div>
+                </div>
+
+                <!-- Controls Bar -->
+                <div class="flex flex-wrap items-center justify-between gap-4 my-5 bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+                    <div class="flex items-center gap-3 flex-wrap">
+                        <span class="text-xs font-mono uppercase text-slate-400">Inspect Query Token:</span>
+                        <div id="attentionTokenSelector" class="flex items-center gap-1.5 flex-wrap"></div>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <label class="flex items-center gap-2.5 cursor-pointer select-none bg-slate-950 px-3.5 py-2 rounded-lg border border-slate-700">
+                            <input type="checkbox" id="causalMaskToggle" checked onchange="renderStep2()" class="sr-only peer">
+                            <div class="w-9 h-5 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all relative peer-checked:bg-indigo-600"></div>
+                            <span class="text-xs font-medium text-slate-200">Causal Mask (Hide Future Tokens)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Q, K, V Vectors + Matrices Layout -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <!-- Left 5 Cols: Q, K, V projections for tokens -->
+                    <div class="lg:col-span-5 space-y-3">
+                        <h3 class="text-xs font-mono uppercase tracking-wider text-slate-400">Linear Projections (Q, K, V ∈ ℝ³)</h3>
+                        <div id="qkvList" class="space-y-2.5"></div>
+                    </div>
+
+                    <!-- Right 7 Cols: Attention Heatmap & Selected Token Focus -->
+                    <div class="lg:col-span-7 space-y-5">
+                        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <div>
+                                    <h3 class="text-sm font-semibold text-white">Softmax Attention Weights Matrix</h3>
+                                    <p class="text-xs text-slate-400">Rows = Query Token (attending from) • Columns = Key Token (attending to)</p>
+                                </div>
+                                <span id="maskBadge" class="text-[11px] font-mono px-2.5 py-1 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                                    Causal Mask: ON (-∞ upper triangle)
+                                </span>
+                            </div>
+
+                            <div id="attentionMatrixContainer" class="overflow-x-auto py-2"></div>
+                        </div>
+
+                        <!-- Selected Token Attention Breakdown -->
+                        <div class="bg-indigo-950/30 border border-indigo-500/30 rounded-xl p-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="text-sm font-semibold text-indigo-200" id="focusedTokenTitle">How Token blends information</h4>
+                                <span class="text-xs font-mono text-indigo-300">Σ weights = 100%</span>
+                            </div>
+                            <p class="text-xs text-slate-300 mb-3" id="focusedTokenDesc"></p>
+                            <div id="focusedTokenBars" class="space-y-2"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- STEP 3: TRANSFORMER BLOCKS -->
+        <section id="step-3" class="step-panel hidden space-y-6">
+            <div class="glass-card rounded-2xl p-6">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+                    <div>
+                        <span class="text-xs font-mono uppercase tracking-wider text-emerald-400">Step 3 of 5 • Deep Feature Refinement</span>
+                        <h2 class="text-2xl font-bold text-white mt-1">Inside the Transformer Decoder Block</h2>
+                        <p class="text-sm text-slate-300 mt-1 max-w-3xl">
+                            GPT stacks multiple identical Transformer blocks. Each block has two main sub-layers: <strong>Masked Multi-Head Self-Attention</strong> (communication between tokens) and a position-wise <strong>Feed-Forward MLP</strong> (computation within each token), wrapped in <strong>Pre-LayerNorm</strong> and <strong>Residual Skip Connections (+)</strong>.
+                        </p>
+                    </div>
+
+                    <!-- Layer Switcher -->
+                    <div class="flex items-center gap-2 bg-slate-900 p-1.5 rounded-xl border border-slate-800 shrink-0">
+                        <span class="text-xs font-mono text-slate-400 px-2">Active Layer:</span>
+                        <button onclick="selectTransformerLayer(1)" id="layerBtn-1" class="layer-btn px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-emerald-600 text-white">Layer 1</button>
+                        <button onclick="selectTransformerLayer(2)" id="layerBtn-2" class="layer-btn px-3 py-1.5 rounded-lg text-xs font-mono font-semibold text-slate-400 hover:text-white">Layer 2</button>
+                        <button onclick="selectTransformerLayer(3)" id="layerBtn-3" class="layer-btn px-3 py-1.5 rounded-lg text-xs font-mono font-semibold text-slate-400 hover:text-white">Layer 3</button>
+                    </div>
+                </div>
+
+                <!-- Interactive Architecture Pipeline -->
+                <div class="mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                    <!-- Pipeline Diagram (Left 5 cols) -->
+                    <div class="lg:col-span-5 bg-slate-900/90 border border-slate-800 rounded-xl p-5">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-xs font-mono uppercase tracking-wider text-slate-400">Click Stage to Inspect Tensors</h3>
+                            <span id="layerRoleBadge" class="text-xs font-mono text-emerald-400">Layer 1: Syntax & Local Grammar</span>
+                        </div>
+
+                        <div class="space-y-2.5" id="blockStageList">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Live Tensor Inspector across the selected stage (Right 7 cols) -->
+                    <div class="lg:col-span-7 space-y-4">
+                        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-5">
+                            <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-800">
+                                <div>
+                                    <span class="text-xs font-mono text-emerald-400 uppercase" id="stageFormulaTag">h' = x + Attention(LN₁(x))</span>
+                                    <h3 class="text-lg font-bold text-white mt-0.5" id="stageTitle">Stage Inspector</h3>
+                                </div>
+                                <span class="text-xs bg-slate-800 text-slate-300 px-2.5 py-1 rounded-md font-mono" id="stageShapeTag">Tensor Shape: [N, 4]</span>
+                            </div>
+
+                            <p class="text-xs text-slate-300 mt-3 leading-relaxed" id="stageExplanation"></p>
+
+                            <!-- Token Vector Comparison Table -->
+                            <div class="mt-5 space-y-3" id="stageVectorsContainer"></div>
+                        </div>
+
+                        <!-- Why Residual + LayerNorm Card -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="bg-slate-900/60 border border-slate-800/80 rounded-xl p-4">
+                                <h4 class="text-xs font-mono uppercase text-indigo-400 font-semibold">Residual Connections (x + SubLayer(x))</h4>
+                                <p class="text-xs text-slate-400 mt-1">
+                                    Creates a "gradient superhighway" during backpropagation and allows each layer to make incremental edits to a token's representation rather than overwriting it from scratch.
+                                </p>
+                            </div>
+                            <div class="bg-slate-900/60 border border-slate-800/80 rounded-xl p-4">
+                                <h4 class="text-xs font-mono uppercase text-amber-400 font-semibold">Feed-Forward MLP (4d Expansion)</h4>
+                                <p class="text-xs text-slate-400 mt-1">
+                                    Projects 4D → 16D with GELU non-linearity then back to 4D. Research shows FFN layers act as key-value memories storing factual associations learned during pre-training.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- STEP 4: NEXT-TOKEN PREDICTION -->
+        <section id="step-4" class="step-panel hidden space-y-6">
+            <div class="glass-card rounded-2xl p-6">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+                    <div>
+                        <span class="text-xs font-mono uppercase tracking-wider text-amber-400">Step 4 of 5 • Vocabulary Projection & Softmax</span>
+                        <h2 class="text-2xl font-bold text-white mt-1">Linear Output Head (LM Head) & Temperature Scaling</h2>
+                        <p class="text-sm text-slate-300 mt-1 max-w-3xl">
+                            Only the <strong>final token's</strong> output vector from the last Transformer layer is needed to predict the next word. It multiplies against the Vocabulary Unembedding matrix (<code class="text-amber-300">W<sub>vocab</sub></code>) to produce raw <strong>Logits</strong>, which are divided by <strong>Temperature (T)</strong> and normalized via <strong>Softmax</strong> into probabilities.
+                        </p>
+                    </div>
+                    <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 font-mono text-xs text-slate-300 shrink-0">
+                        <div class="text-slate-400 mb-1">Probability Distribution:</div>
+                        <div class="text-sm text-white">P(w<sub>i</sub>) = exp(z<sub>i</sub> / T) / Σ<sub>j</sub> exp(z<sub>j</sub> / T)</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
+                    <!-- Left 4 Cols: Final Hidden State + Temperature Control -->
+                    <div class="lg:col-span-4 space-y-4">
+                        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4">
+                            <span class="text-xs font-mono uppercase text-slate-400">Context Anchor (Last Token)</span>
+                            <div class="mt-2 flex items-center justify-between">
+                                <span id="lastTokenBadge" class="px-3 py-1 rounded-lg bg-indigo-500/20 border border-indigo-500/40 text-indigo-200 font-mono font-bold text-base">to</span>
+                                <span class="text-xs font-mono text-slate-400">Final Layer Hidden State h<sub>last</sub></span>
+                            </div>
+                            <div id="lastTokenVectorBox" class="grid grid-cols-4 gap-2 mt-3"></div>
+                        </div>
+
+                        <!-- Temperature Slider Card -->
+                        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <label for="tempSlider" class="text-sm font-semibold text-white">Temperature (T)</label>
+                                <span id="tempValueDisplay" class="px-2.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono text-sm font-bold border border-amber-500/30">0.80</span>
+                            </div>
+                            <input id="tempSlider" type="range" min="0.1" max="2.0" step="0.05" value="0.8" oninput="updateTemperature(this.value)"
+                                class="w-full accent-amber-500 bg-slate-800 h-2 rounded-lg cursor-pointer" />
+                            <div class="flex justify-between text-[11px] font-mono text-slate-400">
+                                <span>0.1 (Greedy / Sharp)</span>
+                                <span>1.0 (Standard)</span>
+                                <span>2.0 (Creative / Flat)</span>
+                            </div>
+                            <p id="tempIntuitionText" class="text-xs text-slate-300 pt-2 border-t border-slate-800">
+                                Balanced distribution: top candidates are strongly favored while still allowing slight diversity.
+                            </p>
+                        </div>
+
+                        <!-- Quick Action to Append Token -->
+                        <div class="bg-indigo-950/30 border border-indigo-500/30 rounded-xl p-4">
+                            <h4 class="text-xs font-mono uppercase text-indigo-300 font-semibold">Ready to Sample?</h4>
+                            <p class="text-xs text-slate-300 mt-1 mb-3">You can click any candidate bar on the right to force-select that token, or jump to Step 5 to run the full autoregressive loop.</p>
+                            <button onclick="goToStep(5)" class="w-full py-2 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs transition flex items-center justify-center gap-2">
+                                Continue to Autoregressive Loop →
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Right 8 Cols: Candidate Logits & Softmax Probability Chart -->
+                    <div class="lg:col-span-8 bg-slate-900/90 border border-slate-800 rounded-xl p-5">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                            <div>
+                                <h3 class="text-base font-bold text-white">Top Candidate Next Tokens (Vocabulary Projection)</h3>
+                                <p class="text-xs text-slate-400">Click any candidate row to immediately append it to the prompt and see the distribution update.</p>
+                            </div>
+                            <span class="text-xs font-mono text-slate-400">Vocab Size |V| = 50,257 (Top 6 shown)</span>
+                        </div>
+
+                        <div id="vocabBarsContainer" class="space-y-3"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- STEP 5: AUTOREGRESSIVE GENERATION -->
+        <section id="step-5" class="step-panel hidden space-y-6">
+            <div class="glass-card rounded-2xl p-6">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+                    <div>
+                        <span class="text-xs font-mono uppercase tracking-wider text-pink-400">Step 5 of 5 • The Autoregressive Loop</span>
+                        <h2 class="text-2xl font-bold text-white mt-1">Iterative Token-by-Token Generation</h2>
+                        <p class="text-sm text-slate-300 mt-1 max-w-3xl">
+                            GPT is <strong>autoregressive</strong>: after sampling one next token from Step 4's probability distribution, that token is appended to the input sequence, and the entire forward pass (Steps 1 → 4) repeats to generate the next token until an <code class="text-pink-300">&lt;EOS&gt;</code> token or length limit is reached.
+                        </p>
+                    </div>
+
+                    <!-- Generation Controls -->
+                    <div class="flex items-center gap-2.5 flex-wrap shrink-0">
+                        <button id="stepGenBtn" onclick="generateSingleStep()" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition shadow-lg shadow-indigo-600/25 flex items-center gap-2">
+                            <span>+ Generate Next Token</span>
+                        </button>
+                        <button id="autoGenBtn" onclick="toggleAutoGenerate()" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition shadow-lg shadow-emerald-600/25 flex items-center gap-2">
+                            <span id="autoGenBtnLabel">▶ Auto-Generate</span>
+                        </button>
+                        <button onclick="resetToBasePrompt()" class="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs border border-slate-700 transition">
+                            ↺ Reset Sequence
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Live Generation Stage Visualizer -->
+                <div class="mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <!-- Left 7 Cols: Sequence Growth & Loop Pipeline -->
+                    <div class="lg:col-span-7 space-y-5">
+                        <!-- Animated Pipeline Mini-Tracker -->
+                        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-xs font-mono uppercase text-slate-400">Forward Pass Cycle Tracker</span>
+                                <span id="cycleStatusLabel" class="text-xs font-mono text-emerald-400">Ready to sample next token</span>
+                            </div>
+                            <div class="grid grid-cols-4 gap-2 text-center">
+                                <div id="pipe-1" class="p-2.5 rounded-lg border border-slate-800 bg-slate-950 text-xs font-mono text-slate-400 transition">
+                                    1. Embed + Pos
+                                </div>
+                                <div id="pipe-2" class="p-2.5 rounded-lg border border-slate-800 bg-slate-950 text-xs font-mono text-slate-400 transition">
+                                    2. Self-Attention
+                                </div>
+                                <div id="pipe-3" class="p-2.5 rounded-lg border border-slate-800 bg-slate-950 text-xs font-mono text-slate-400 transition">
+                                    3. Layer Blocks
+                                </div>
+                                <div id="pipe-4" class="p-2.5 rounded-lg border border-slate-800 bg-slate-950 text-xs font-mono text-slate-400 transition">
+                                    4. Softmax Sample
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Live Output Terminal -->
+                        <div class="bg-slate-950 border border-slate-800 rounded-xl p-5">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-xs font-mono uppercase text-slate-400">Autoregressive Output Sequence</span>
+                                <span class="text-xs font-mono text-slate-400"><span class="inline-block w-2 h-2 rounded-full bg-indigo-400 mr-1"></span>Prompt <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 ml-2 mr-1"></span>Generated</span>
+                            </div>
+                            <div id="step5SequenceBox" class="min-h-[84px] p-4 rounded-xl bg-slate-900/90 border border-slate-800/80 flex items-center flex-wrap gap-2">
+                                <!-- Tokens rendered here -->
+                            </div>
+                        </div>
+
+                        <!-- Generation History Log -->
+                        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4">
+                            <h3 class="text-xs font-mono uppercase tracking-wider text-slate-400 mb-3">Autoregressive Step Log</h3>
+                            <div id="generationHistoryLog" class="space-y-2 max-h-56 overflow-y-auto pr-1">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right 5 Cols: Live Next-Token Candidates for Current Step -->
+                    <div class="lg:col-span-5 bg-slate-900/90 border border-slate-800 rounded-xl p-5 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="text-sm font-bold text-white">Live Next-Token Distribution</h3>
+                                <span class="text-xs font-mono text-amber-300" id="step5TempBadge">T = 0.80</span>
+                            </div>
+                            <p class="text-xs text-slate-400 mb-4">
+                                Conditioned on <span id="step5ConditionText" class="text-slate-200 font-mono"></span>. Click any token bar below to manually choose it, or use the Generate buttons above.
+                            </p>
+                            <div id="step5CandidateList" class="space-y-2.5"></div>
+                        </div>
+
+                        <div class="mt-6 pt-4 border-t border-slate-800 text-xs text-slate-400 flex items-center justify-between">
+                            <span>KV-Cache Intuition: In production, past K & V vectors are cached so only the newest token computes Q, K, V.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bottom Prev / Next Step Bar -->
+        <div class="mt-6 flex items-center justify-between glass-card rounded-xl px-5 py-3.5">
+            <button id="prevStepBtn" onclick="changeStep(-1)" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium transition disabled:opacity-40 disabled:pointer-events-none">
+                ← Previous Step
+            </button>
+            <div class="text-xs font-mono text-slate-400" id="bottomStepIndicator">Step 1 of 5</div>
+            <button id="nextStepBtn" onclick="changeStep(1)" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition disabled:opacity-40 disabled:pointer-events-none">
+                Next Step →
+            </button>
+        </div>
+
+    </main>
+
+    <script>
+        // ============================================================================
+        // APPLICATION STATE & DETERMINISTIC NUMERICAL ENGINE
+        // ============================================================================
+        const STEPS_META = [
+            { id: 1, title: "1. Tokenization & Embeddings", subtitle: "IDs + 4D Vectors + Pos" },
+            { id: 2, title: "2. Self-Attention", subtitle: "Q, K, V & Causal Mask" },
+            { id: 3, title: "3. Transformer Blocks", subtitle: "LN, MHA, Residual & FFN" },
+            { id: 4, title: "4. Next-Token Prediction", subtitle: "Logits & Temperature" },
+            { id: 5, title: "5. Generation Loop", subtitle: "Autoregressive Sampling" }
+        ];
+
+        let state = {
+            currentStep: 1,
+            basePrompt: "The robot learned to",
+            tokens: ["The", "robot", "learned", "to"],
+            promptTokenCount: 4,
+            selectedTokenIndex: 3,      // For Step 2 inspection
+            causalMask: true,           // For Step 2 mask toggle
+            activeLayer: 1,             // For Step 3 layer toggle (1, 2, 3)
+            activeBlockStage: 'out',    // 'in', 'ln1', 'attn', 'res1', 'ln2', 'ffn', 'out'
+            temperature: 0.80,          // For Step 4 & 5 softmax scaling
+            generationLog: [],          // Step 5 history
+            isAutoGenerating: false,
+            autoTimer: null
+        };
+
+        // Curated realistic continuation tree for smooth educational completions
+        const CONTINUATION_GRAPH = {
+            "to": [
+                { word: "paint", logit: 3.4 },
+                { word: "think", logit: 3.1 },
+                { word: "speak", logit: 2.5 },
+                { word: "walk", logit: 2.0 },
+                { word: "solve", logit: 1.6 },
+                { word: "code", logit: 1.2 }
+            ],
+            "paint": [
+                { word: "vibrant", logit: 3.5 },
+                { word: "beautiful", logit: 3.0 },
+                { word: "portraits", logit: 2.6 },
+                { word: "abstract", logit: 2.1 },
+                { word: "with", logit: 1.5 },
+                { word: "landscapes", logit: 1.3 }
+            ],
+            "think": [
+                { word: "creatively", logit: 3.6 },
+                { word: "deeply", logit: 2.9 },
+                { word: "about", logit: 2.5 },
+                { word: "like", logit: 2.0 },
+                { word: "independently", logit: 1.7 },
+                { word: "fast", logit: 1.1 }
+            ],
+            "speak": [
+                { word: "fluently", logit: 3.5 },
+                { word: "seven", logit: 2.8 },
+                { word: "with", logit: 2.4 },
+                { word: "clearly", logit: 2.1 },
+                { word: "human", logit: 1.6 },
+                { word: "softly", logit: 1.2 }
+            ],
+            "vibrant": [
+                { word: "landscapes", logit: 3.7 },
+                { word: "galaxies", logit: 3.0 },
+                { word: "canvases", logit: 2.4 },
+                { word: "colors", logit: 2.0 },
+                { word: "dreams", logit: 1.6 },
+                { word: "murals", logit: 1.2 }
+            ],
+            "creatively": [
+                { word: "and", logit: 3.4 },
+                { word: "under", logit: 2.7 },
+                { word: "about", logit: 2.4 },
+                { word: "every", logit: 1.9 },
+                { word: "without", logit: 1.5 },
+                { word: "today", logit: 1.2 }
+            ],
+            "can": [
+                { word: "transform", logit: 3.5 },
+                { word: "reason", logit: 3.1 },
+                { word: "discover", logit: 2.6 },
+                { word: "assist", logit: 2.2 },
+                { word: "generate", logit: 1.8 },
+                { word: "learn", logit: 1.4 }
+            ],
+            "transform": [
+                { word: "modern", logit: 3.5 },
+                { word: "scientific", logit: 3.0 },
+                { word: "human", logit: 2.5 },
+                { word: "complex", logit: 2.1 },
+                { word: "global", logit: 1.6 },
+                { word: "everyday", logit: 1.2 }
+            ],
+            "modern": [
+                { word: "medicine", logit: 3.6 },
+                { word: "science", logit: 3.1 },
+                { word: "education", logit: 2.6 },
+                { word: "society", logit: 2.1 },
+                { word: "engineering", logit: 1.7 },
+                { word: "art", logit: 1.2 }
+            ],
+            "process": [
+                { word: "complex", logit: 3.6 },
+                { word: "massive", logit: 3.0 },
+                { word: "sequential", logit: 2.7 },
+                { word: "visual", logit: 2.0 },
+                { word: "symbolic", logit: 1.6 },
+                { word: "Contextual", logit: 1.2 }
+            ],
+            "complex": [
+                { word: "patterns", logit: 3.7 },
+                { word: "equations", logit: 2.9 },
+                { word: "signals", logit: 2.5 },
+                { word: "datasets", logit: 2.1 },
+                { word: "languages", logit: 1.7 },
+                { word: "ideas", logit: 1.1 }
+            ],
+            "discovered": [
+                { word: "ancient", logit: 3.5 },
+                { word: "liquid", logit: 3.1 },
+                { word: "distant", logit: 2.7 },
+                { word: "glowing", logit: 2.2 },
+                { word: "hidden", logit: 1.8 },
+                { word: "crystalline", logit: 1.3 }
+            ],
+            "ancient": [
+                { word: "biosignatures", logit: 3.5 },
+                { word: "rivers", logit: 3.1 },
+                { word: "ruins", logit: 2.6 },
+                { word: "craters", logit: 2.0 },
+                { word: "minerals", logit: 1.6 },
+                { word: "galaxies", logit: 1.2 }
+            ]
+        };
+
+        const FALLBACK_CANDIDATES = [
+            { word: "efficiently", logit: 3.3 },
+            { word: "today", logit: 2.8 },
+            { word: "gracefully", logit: 2.4 },
+            { word: "with", logit: 2.0 },
+            { word: "precision", logit: 1.7 },
+            { word: "<EOS>", logit: 1.4 }
+        ];
+
+        // Deterministic hash for any string -> token ID & 4D embedding
+        function hashWordToId(word) {
+            let h = 2166136261;
+            const clean = word.trim();
+            for (let i = 0; i < clean.length; i++) {
+                h ^= clean.charCodeAt(i);
+                h = Math.imul(h, 16777619);
+            }
+            return Math.abs(h % 48000) + 1024;
+        }
+
+        function getWordEmbedding(word) {
+            const id = hashWordToId(word);
+            const v = [
+                Math.sin(id * 0.13) * 0.85,
+                Math.cos(id * 0.29) * 0.85,
+                Math.sin(id * 0.47 + 1.1) * 0.85,
+                Math.cos(id * 0.71 + 0.5) * 0.85
+            ];
+            return v.map(n => Number(n.toFixed(2)));
+        }
+
+        function getPositionalEncoding(pos) {
+            // 4D sinusoidal positional encoding
+            const p = [
+                Math.sin(pos / Math.pow(10000, 0 / 4)),
+                Math.cos(pos / Math.pow(10000, 0 / 4)),
+                Math.sin(pos / Math.pow(10000, 2 / 4)),
+                Math.cos(pos / Math.pow(10000, 2 / 4))
+            ];
+            return p.map(n => Number((n * 0.65).toFixed(2)));
+        }
+
+        function addVectors(a, b) {
+            return a.map((v, i) => Number((v + b[i]).toFixed(2)));
+        }
+
+        function layerNorm(vec) {
+            const mean = vec.reduce((acc, v) => acc + v, 0) / vec.length;
+            const variance = vec.reduce((acc, v) => acc + Math.pow(v - mean, 2), 0) / vec.length;
+            const std = Math.sqrt(variance + 1e-5);
+            return vec.map(v => Number(((v - mean) / std * 0.75).toFixed(2)));
+        }
+
+        // Compute Q, K, V (3D projections) for Step 2
+        function computeQKV(tokens) {
+            return tokens.map((tok, idx) => {
+                const emb = addVectors(getWordEmbedding(tok), getPositionalEncoding(idx));
+                const Q = [
+                    Number((emb[0] * 0.8 + emb[1] * 0.3).toFixed(2)),
+                    Number((emb[2] * 0.7 - emb[3] * 0.4).toFixed(2)),
+                    Number((emb[1] * 0.5 + emb[3] * 0.6).toFixed(2))
+                ];
+                const K = [
+                    Number((emb[0] * 0.7 + emb[2] * 0.4).toFixed(2)),
+                    Number((emb[1] * 0.6 - emb[0] * 0.3).toFixed(2)),
+                    Number((emb[3] * 0.8 + emb[2] * 0.2).toFixed(2))
+                ];
+                const V = [
+                    Number((emb[3] * 0.7 + emb[0] * 0.4).toFixed(2)),
+                    Number((emb[1] * 0.8 + emb[2] * 0.2).toFixed(2)),
+                    Number((emb[2] * 0.6 - emb[0] * 0.3).toFixed(2))
+                ];
+                return { token: tok, idx, emb, Q, K, V };
+            });
+        }
+
+        // Compute Attention Matrix [N x N]
+        function computeAttentionMatrix(qkvData, applyCausalMask) {
+            const N = qkvData.length;
+            const dkSqrt = Math.sqrt(3);
+            const rawScores = [];
+            const weights = [];
+
+            for (let i = 0; i < N; i++) {
+                const rowRaw = [];
+                for (let j = 0; j < N; j++) {
+                    if (applyCausalMask && j > i) {
+                        rowRaw.push(-Infinity);
+                    } else {
+                        // Dot product Q_i . K_j / sqrt(d_k) + slight self/recent bias for clarity
+                        const q = qkvData[i].Q;
+                        const k = qkvData[j].K;
+                        let dot = (q[0]*k[0] + q[1]*k[1] + q[2]*k[2]) / dkSqrt;
+                        if (i === j) dot += 0.35;
+                        rowRaw.push(Number(dot.toFixed(2)));
+                    }
+                }
+                rawScores.push(rowRaw);
+
+                // Softmax over valid entries
+                const validMax = Math.max(...rowRaw.filter(x => x !== -Infinity));
+                const exps = rowRaw.map(x => x === -Infinity ? 0 : Math.exp(x - validMax));
+                const sumExp = exps.reduce((a, b) => a + b, 0);
+                const rowWeights = exps.map(e => e / sumExp);
+                weights.push(rowWeights);
+            }
+            return { rawScores, weights };
+        }
+
+        // Compute Step 3 Layer & Stage Vectors
+        function computeBlockVectors(tokens, layerNum) {
+            const qkv = computeQKV(tokens);
+            const { weights } = computeAttentionMatrix(qkv, true);
+
+            return tokens.map((tok, i) => {
+                const baseIn = addVectors(getWordEmbedding(tok), getPositionalEncoding(i));
+                // Evolve input based on layer number
+                const layerScale = 1 + (layerNum - 1) * 0.22;
+                const x_in = baseIn.map((v, d) => Number((v * layerScale + (layerNum - 1) * 0.08 * ((d % 2 === 0) ? 1 : -1)).toFixed(2)));
+                const ln1 = layerNorm(x_in);
+
+                // Attention output = weighted blend of previous tokens
+                const attn = [0, 0, 0, 0];
+                for (let j = 0; j <= i; j++) {
+                    const w = weights[i][j];
+                    const vVec = addVectors(getWordEmbedding(tokens[j]), getPositionalEncoding(j));
+                    for (let d = 0; d < 4; d++) {
+                        attn[d] += w * vVec[(d + layerNum) % 4] * 0.65;
+                    }
+                }
+                const attnClean = attn.map(v => Number(v.toFixed(2)));
+                const res1 = addVectors(x_in, attnClean);
+                const ln2 = layerNorm(res1);
+                // FFN GELU-like non-linear projection
+                const ffn = ln2.map((v, d) => Number((Math.tanh(v * 1.2 + (d - 1.5) * 0.25) * 0.55).toFixed(2)));
+                const out = addVectors(res1, ffn);
+
+                return { token: tok, idx: i, in: x_in, ln1, attn: attnClean, res1, ln2, ffn, out };
+            });
+        }
+
+        // Compute Step 4 & 5 Next Token Candidates with Temperature
+        function getNextTokenDistribution() {
+            const lastTok = state.tokens[state.tokens.length - 1];
+            const cleanLast = lastTok.replace(/[^a-zA-Z<>]/g, "").toLowerCase();
+            let rawCandidates = CONTINUATION_GRAPH[cleanLast] || FALLBACK_CANDIDATES;
+
+            // Avoid repeating the exact same word if already generated recently
+            const T = Math.max(0.1, state.temperature);
+            const scaledLogits = rawCandidates.map(c => c.logit / T);
+            const maxLogit = Math.max(...scaledLogits);
+            const exps = scaledLogits.map(l => Math.exp(l - maxLogit));
+            const sumExp = exps.reduce((a, b) => a + b, 0);
+
+            return rawCandidates.map((c, idx) => ({
+                word: c.word,
+                tokenId: hashWordToId(c.word),
+                logit: c.logit,
+                scaledLogit: Number((c.logit / T).toFixed(2)),
+                prob: exps[idx] / sumExp
+            }));
+        }
+
+        // ============================================================================
+        // NAVIGATION & GLOBAL HEADER RENDERING
+        // ============================================================================
+        function renderTabs() {
+            const nav = document.getElementById('stepTabs');
+            nav.innerHTML = STEPS_META.map(s => {
+                const active = s.id === state.currentStep;
+                return `
+                    <button onclick="goToStep(${s.id})"
+                        class="flex items-center gap-2.5 px-4 py-2 rounded-xl text-left transition shrink-0 border ${
+                            active
+                                ? 'bg-indigo-600/20 border-indigo-500 text-white shadow-sm'
+                                : 'bg-slate-900/60 border-slate-800/80 text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+                        }">
+                        <span class="w-6 h-6 rounded-lg text-xs font-mono font-bold flex items-center justify-center ${
+                            active ? 'bg-indigo-500 text-white' : 'bg-slate-800 text-slate-400'
+                        }">${s.id}</span>
+                        <div>
+                            <div class="text-xs font-semibold leading-tight">${s.title.split('. ')[1]}</div>
+                            <div class="text-[10px] font-mono ${active ? 'text-indigo-300' : 'text-slate-500'}">${s.subtitle}</div>
+                        </div>
+                    </button>
+                `;
+            }).join('');
+
+            document.getElementById('prevStepBtn').disabled = state.currentStep === 1;
+            document.getElementById('nextStepBtn').disabled = state.currentStep === 5;
+            document.getElementById('bottomStepIndicator').textContent = `Step ${state.currentStep} of 5 — ${STEPS_META[state.currentStep - 1].title.split('. ')[1]}`;
+        }
+
+        function renderGlobalStream() {
+            const streamEl = document.getElementById('globalTokenStream');
+            streamEl.innerHTML = state.tokens.map((tok, i) => {
+                const isGenerated = i >= state.promptTokenCount;
+                return `
+                    <span class="px-2.5 py-0.5 rounded-md text-xs font-mono font-medium border ${
+                        isGenerated
+                            ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
+                            : 'bg-indigo-500/15 border-indigo-500/30 text-indigo-200'
+                    }">
+                        <span class="opacity-50 mr-1 text-[10px]">#${i}</span>${tok}
+                    </span>
+                `;
+            }).join('');
+            document.getElementById('sequenceStats').textContent = `Length: ${state.tokens.length} tokens (${state.promptTokenCount} prompt + ${state.tokens.length - state.promptTokenCount} generated)`;
+        }
+
+        function goToStep(stepNumber) {
+            if (stepNumber < 1 || stepNumber > 5) return;
+            state.currentStep = stepNumber;
+            document.querySelectorAll('.step-panel').forEach((el, idx) => {
+                el.classList.toggle('hidden', idx + 1 !== stepNumber);
+            });
+            renderTabs();
+            renderCurrentStep();
+        }
+
+        function changeStep(delta) {
+            goToStep(state.currentStep + delta);
+        }
+
+        function parsePromptToTokens(str) {
+            const words = str.trim().split(/\s+/).filter(Boolean).slice(0, 6);
+            return words.length > 0 ? words : ["The", "robot"];
+        }
+
+        function applyCustomPrompt() {
+            stopAutoGenerate();
+            const val = document.getElementById('customPromptInput').value;
+            const parsed = parsePromptToTokens(val);
+            state.basePrompt = parsed.join(' ');
+            state.tokens = [...parsed];
+            state.promptTokenCount = parsed.length;
+            state.selectedTokenIndex = parsed.length - 1;
+            state.generationLog = [];
+            renderAll();
+        }
+
+        function selectPreset(val) {
+            document.getElementById('customPromptInput').value = val;
+            applyCustomPrompt();
+        }
+
+        // ============================================================================
+        // STEP 1 RENDERER: TOKENIZATION & EMBEDDINGS
+        // ============================================================================
+        function renderStep1() {
+            const grid = document.getElementById('step1TokenGrid');
+            const posBars = document.getElementById('posEncodingBars');
+
+            grid.innerHTML = state.tokens.map((tok, i) => {
+                const tokenId = hashWordToId(tok);
+                const emb = getWordEmbedding(tok);
+                const pos = getPositionalEncoding(i);
+                const combined = addVectors(emb, pos);
+                const isGen = i >= state.promptTokenCount;
+
+                return `
+                    <div class="vector-pill bg-slate-900/90 border ${isGen ? 'border-emerald-500/40' : 'border-slate-800'} rounded-xl p-4 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-[11px] font-mono text-slate-400">Position ${i}</span>
+                                <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 text-indigo-300 border border-slate-700">ID: ${tokenId}</span>
+                            </div>
+                            <div class="mt-2 flex items-baseline justify-between">
+                                <span class="text-xl font-mono font-bold text-white">"${tok}"</span>
+                                ${isGen ? '<span class="text-[10px] font-mono text-emerald-400 uppercase">Generated</span>' : ''}
+                            </div>
+                        </div>
+
+                        <div class="mt-4 space-y-2.5 text-xs font-mono">
+                            <div class="bg-slate-950/90 p-2 rounded-lg border border-slate-800/80">
+                                <div class="text-[10px] text-indigo-400 mb-1">Token Embedding E("${tok}")</div>
+                                <div class="grid grid-cols-4 gap-1 text-center">
+                                    ${emb.map(v => `<span class="py-0.5 rounded bg-indigo-500/10 text-indigo-200">${v >= 0 ? '+' : ''}${v}</span>`).join('')}
+                                </div>
+                            </div>
+
+                            <div class="text-center text-slate-500 font-bold text-xs">+</div>
+
+                            <div class="bg-slate-950/90 p-2 rounded-lg border border-slate-800/80">
+                                <div class="text-[10px] text-amber-400 mb-1">Positional Encoding P(${i})</div>
+                                <div class="grid grid-cols-4 gap-1 text-center">
+                                    ${pos.map(v => `<span class="py-0.5 rounded bg-amber-500/10 text-amber-200">${v >= 0 ? '+' : ''}${v}</span>`).join('')}
+                                </div>
+                            </div>
+
+                            <div class="text-center text-slate-500 font-bold text-xs">=</div>
+
+                            <div class="bg-indigo-950/40 p-2.5 rounded-lg border border-indigo-500/40">
+                                <div class="text-[10px] text-emerald-300 mb-1 font-semibold">Final Input Vector x<sub>${i}</sub></div>
+                                <div class="grid grid-cols-4 gap-1 text-center font-semibold">
+                                    ${combined.map(v => `<span class="py-0.5 rounded bg-emerald-500/15 text-white">${v >= 0 ? '+' : ''}${v}</span>`).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Render Positional Encoding visual bars
+            posBars.innerHTML = state.tokens.map((tok, i) => {
+                const pos = getPositionalEncoding(i);
+                return `
+                    <div class="bg-slate-950/80 border border-slate-800/80 rounded-lg p-3">
+                        <div class="flex items-center justify-between text-xs font-mono mb-2">
+                            <span class="text-amber-300">pos = ${i} ("${tok}")</span>
+                            <span class="text-[10px] text-slate-500">[sin, cos, sin, cos]</span>
+                        </div>
+                        <div class="grid grid-cols-4 gap-1.5 items-end h-12 pt-2">
+                            ${pos.map((val, dim) => {
+                                const heightPct = Math.round(Math.abs(val) * 100);
+                                const isPos = val >= 0;
+                                return `
+                                    <div class="flex flex-col items-center h-full justify-end">
+                                        <div class="w-full rounded-t ${isPos ? 'bg-amber-400/80' : 'bg-pink-400/80'}" style="height: ${Math.max(15, heightPct)}%"></div>
+                                        <span class="text-[10px] font-mono text-slate-400 mt-1">d${dim}</span>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ============================================================================
+        // STEP 2 RENDERER: SELF-ATTENTION & CAUSAL MASK
+        // ============================================================================
+        function selectAttentionToken(idx) {
+            state.selectedTokenIndex = idx;
+            renderStep2();
+        }
+
+        function renderStep2() {
+            if (state.selectedTokenIndex >= state.tokens.length) {
+                state.selectedTokenIndex = state.tokens.length - 1;
+            }
+            state.causalMask = document.getElementById('causalMaskToggle').checked;
+
+            const qkvData = computeQKV(state.tokens);
+            const { weights } = computeAttentionMatrix(qkvData, state.causalMask);
+
+            // Token selector buttons
+            const selectorEl = document.getElementById('attentionTokenSelector');
+            selectorEl.innerHTML = state.tokens.map((tok, i) => {
+                const active = i === state.selectedTokenIndex;
+                return `
+                    <button onclick="selectAttentionToken(${i})"
+                        class="px-3 py-1 rounded-lg font-mono text-xs transition border ${
+                            active
+                                ? 'bg-purple-600 text-white border-purple-400 shadow'
+                                : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700'
+                        }">
+                        #${i} "${tok}"
+                    </button>
+                `;
+            }).join('');
+
+            // Mask badge
+            const badge = document.getElementById('maskBadge');
+            if (state.causalMask) {
+                badge.className = "text-[11px] font-mono px-2.5 py-1 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30";
+                badge.textContent = "Causal Mask: ON (Future = -∞ → 0%)";
+            } else {
+                badge.className = "text-[11px] font-mono px-2.5 py-1 rounded bg-rose-500/15 text-rose-300 border border-rose-500/30";
+                badge.textContent = "Causal Mask: OFF (Data Leakage from Future!)";
+            }
+
+            // Left column: Q, K, V cards
+            const qkvList = document.getElementById('qkvList');
+            qkvList.innerHTML = qkvData.map((item, i) => {
+                const isSelected = i === state.selectedTokenIndex;
+                return `
+                    <div onclick="selectAttentionToken(${i})"
+                        class="cursor-pointer p-3 rounded-xl border transition ${
+                            isSelected ? 'bg-purple-950/30 border-purple-500/60' : 'bg-slate-900/80 border-slate-800 hover:border-slate-700'
+                        }">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-mono text-xs font-bold text-white">#${i} "${item.token}"</span>
+                            <span class="text-[10px] font-mono ${isSelected ? 'text-purple-300' : 'text-slate-500'}">
+                                ${isSelected ? '● Active Query Token' : 'Click to inspect'}
+                            </span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2 text-[11px] font-mono">
+                            <div class="bg-slate-950 p-1.5 rounded border border-purple-500/20">
+                                <span class="text-purple-400 block text-[10px]">Query (Q)</span>
+                                <span class="text-slate-200">[${item.Q.join(', ')}]</span>
+                            </div>
+                            <div class="bg-slate-950 p-1.5 rounded border border-sky-500/20">
+                                <span class="text-sky-400 block text-[10px]">Key (K)</span>
+                                <span class="text-slate-200">[${item.K.join(', ')}]</span>
+                            </div>
+                            <div class="bg-slate-950 p-1.5 rounded border border-emerald-500/20">
+                                <span class="text-emerald-400 block text-[10px]">Value (V)</span>
+                                <span class="text-slate-200">[${item.V.join(', ')}]</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Right column: Heatmap Matrix
+            const matrixEl = document.getElementById('attentionMatrixContainer');
+            let tableHtml = `<table class="w-full border-collapse font-mono text-xs"><thead><tr>
+                <th class="p-2 text-left text-slate-400 text-[11px]">Query ↓ / Key →</th>`;
+            state.tokens.forEach((tok, j) => {
+                tableHtml += `<th class="p-2 text-center text-sky-300 font-medium">"${tok}"<span class="block text-[10px] text-slate-500">#${j}</span></th>`;
+            });
+            tableHtml += `</tr></thead><tbody>`;
+
+            weights.forEach((row, i) => {
+                const isSelectedRow = i === state.selectedTokenIndex;
+                tableHtml += `<tr class="${isSelectedRow ? 'ring-1 ring-purple-400 rounded-lg bg-purple-950/20' : ''}">
+                    <td onclick="selectAttentionToken(${i})" class="p-2 cursor-pointer font-medium ${isSelectedRow ? 'text-purple-300 font-bold' : 'text-slate-300'}">
+                        "${state.tokens[i]}" <span class="text-[10px] text-slate-500">#${i}</span>
+                    </td>`;
+                row.forEach((w, j) => {
+                    const isMasked = state.causalMask && j > i;
+                    const pct = Math.round(w * 100);
+                    const alpha = Math.max(0.12, w * 0.95);
+                    if (isMasked) {
+                        tableHtml += `
+                            <td class="p-1.5 text-center">
+                                <div class="heatmap-cell rounded-lg py-2.5 px-2 bg-slate-950 border border-slate-800/80 text-slate-600">
+                                    <div class="text-xs">0%</div>
+                                    <div class="text-[9px] uppercase">Masked (-∞)</div>
+                                </div>
+                            </td>`;
+                    } else {
+                        tableHtml += `
+                            <td onclick="selectAttentionToken(${i})" class="p-1.5 text-center cursor-pointer">
+                                <div class="heatmap-cell rounded-lg py-2.5 px-2 border border-indigo-400/30 text-white"
+                                     style="background-color: rgba(99, 102, 241, ${alpha})">
+                                    <div class="text-xs font-bold">${pct}%</div>
+                                    <div class="text-[10px] opacity-75">${w.toFixed(2)}</div>
+                                </div>
+                            </td>`;
+                    }
+                });
+                tableHtml += `</tr>`;
+            });
+            tableHtml += `</tbody></table>`;
+            matrixEl.innerHTML = tableHtml;
+
+            // Focused Token Attention Bar Breakdown
+            const focusIdx = state.selectedTokenIndex;
+            const focusTok = state.tokens[focusIdx];
+            const focusWeights = weights[focusIdx];
+
+            document.getElementById('focusedTokenTitle').innerHTML = `How Query Token <span class="font-mono text-white px-2 py-0.5 rounded bg-purple-600/40">#${focusIdx} "${focusTok}"</span> Attends to Context`;
+            document.getElementById('focusedTokenDesc').textContent = state.causalMask
+                ? `"${focusTok}" can only attend to itself and earlier tokens (positions 0 to ${focusIdx}). Future positions (${focusIdx + 1}+) are blocked by the causal mask.`
+                : `With Causal Mask disabled, "${focusTok}" illegally attends to future tokens! In GPT training, this would let the model cheat.`;
+
+            const barsContainer = document.getElementById('focusedTokenBars');
+            barsContainer.innerHTML = focusWeights.map((w, j) => {
+                const pct = (w * 100).toFixed(1);
+                const isMasked = state.causalMask && j > focusIdx;
+                return `
+                    <div class="flex items-center gap-3 font-mono text-xs">
+                        <div class="w-28 shrink-0 truncate ${isMasked ? 'text-slate-600' : 'text-slate-200'}">
+                            #${j} "${state.tokens[j]}"
+                        </div>
+                        <div class="flex-1 h-4 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
+                            <div class="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-300" style="width: ${pct}%"></div>
+                        </div>
+                        <div class="w-16 text-right ${isMasked ? 'text-slate-600' : 'text-indigo-300 font-semibold'}">
+                            ${isMasked ? 'MASKED' : pct + '%'}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ============================================================================
+        // STEP 3 RENDERER: TRANSFORMER BLOCKS
+        // ============================================================================
+        const BLOCK_STAGES = [
+            {
+                key: 'in',
+                name: '1. Block Input (x)',
+                formula: 'x ∈ ℝ^(N×4)',
+                desc: 'Incoming token embeddings (from Step 1 for Layer 1, or output from the previous Transformer block for deeper layers).'
+            },
+            {
+                key: 'ln1',
+                name: '2. Pre-LayerNorm 1 (LN₁)',
+                formula: 'LN₁(x) = (x - μ) / σ',
+                desc: 'Normalizes each token vector to zero mean and unit variance before self-attention, stabilizing deep gradient flow.'
+            },
+            {
+                key: 'attn',
+                name: '3. Masked Multi-Head Attention',
+                formula: 'Attn(LN₁(x))',
+                desc: 'Tokens exchange contextual information with preceding tokens via Q, K, V heads.'
+            },
+            {
+                key: 'res1',
+                name: '4. Residual Connection 1 (+)',
+                formula: 'h = x + Attn(LN₁(x))',
+                desc: 'Adds the attention output directly back to the original input x via the skip connection.'
+            },
+            {
+                key: 'ln2',
+                name: '5. Pre-LayerNorm 2 (LN₂)',
+                formula: 'LN₂(h)',
+                desc: 'Second normalization preparing the residual stream for the Feed-Forward MLP.'
+            },
+            {
+                key: 'ffn',
+                name: '6. Feed-Forward Network (MLP)',
+                formula: 'FFN(z) = GELU(zW₁ + b₁)W₂ + b₂',
+                desc: 'Applies position-wise non-linear feature transformation (expanding 4D → 16D → 4D) independently on each token.'
+            },
+            {
+                key: 'out',
+                name: '7. Block Output / Residual 2 (+)',
+                formula: 'out = h + FFN(LN₂(h))',
+                desc: 'Final enriched representation exiting this Transformer block and feeding into the next layer (or LM head).'
+            }
+        ];
+
+        const LAYER_ROLES = {
+            1: "Layer 1: Surface Syntax & Local Word Relationships",
+            2: "Layer 2: Phrase Structure & Semantic Disambiguation",
+            3: "Layer 3: High-Level Task Context & Next-Token Readiness"
+        };
+
+        function selectTransformerLayer(layerNum) {
+            state.activeLayer = layerNum;
+            document.querySelectorAll('.layer-btn').forEach((btn, idx) => {
+                if (idx + 1 === layerNum) {
+                    btn.className = "layer-btn px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-emerald-600 text-white";
+                } else {
+                    btn.className = "layer-btn px-3 py-1.5 rounded-lg text-xs font-mono font-semibold text-slate-400 hover:text-white";
+                }
+            });
+            renderStep3();
+        }
+
+        function selectBlockStage(stageKey) {
+            state.activeBlockStage = stageKey;
+            renderStep3();
+        }
+
+        function renderStep3() {
+            document.getElementById('layerRoleBadge').textContent = LAYER_ROLES[state.activeLayer];
+
+            // Render pipeline diagram list
+            const stageListEl = document.getElementById('blockStageList');
+            stageListEl.innerHTML = BLOCK_STAGES.map((st, idx) => {
+                const active = st.key === state.activeBlockStage;
+                return `
+                    <div>
+                        <button onclick="selectBlockStage('${st.key}')"
+                            class="w-full text-left p-3 rounded-xl border transition flex items-center justify-between ${
+                                active
+                                    ? 'bg-emerald-950/40 border-emerald-500 text-white shadow-md'
+                                    : 'bg-slate-950/90 border-slate-800 text-slate-300 hover:border-slate-700'
+                            }">
+                            <div>
+                                <div class="text-xs font-semibold">${st.name}</div>
+                                <div class="text-[11px] font-mono ${active ? 'text-emerald-300' : 'text-slate-500'}">${st.formula}</div>
+                            </div>
+                            <span class="text-xs font-mono px-2 py-0.5 rounded ${active ? 'bg-emerald-500 text-slate-950 font-bold' : 'bg-slate-900 text-slate-500'}">
+                                ${active ? 'Inspecting' : 'View'}
+                            </span>
+                        </button>
+                        ${idx < BLOCK_STAGES.length - 1 ? '<div class="text-center text-slate-600 text-xs py-0.5 flow-arrow">↓</div>' : ''}
+                    </div>
+                `;
+            }).join('');
+
+            // Render active stage inspector
+            const stageMeta = BLOCK_STAGES.find(s => s.key === state.activeBlockStage);
+            document.getElementById('stageFormulaTag').textContent = `Layer ${state.activeLayer} • ${stageMeta.formula}`;
+            document.getElementById('stageTitle').textContent = stageMeta.name;
+            document.getElementById('stageShapeTag').textContent = `Tensor Shape: [${state.tokens.length}, 4]`;
+            document.getElementById('stageExplanation').textContent = stageMeta.desc;
+
+            const blockData = computeBlockVectors(state.tokens, state.activeLayer);
+            const container = document.getElementById('stageVectorsContainer');
+
+            container.innerHTML = blockData.map(row => {
+                const vec = row[state.activeBlockStage];
+                const inVec = row.in;
+                return `
+                    <div class="bg-slate-950/90 border border-slate-800 rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-7 h-7 rounded-lg bg-slate-900 border border-slate-700 font-mono text-xs flex items-center justify-center text-slate-400">#${row.idx}</span>
+                            <div>
+                                <div class="font-mono font-bold text-white text-sm">"${row.token}"</div>
+                                <div class="text-[10px] font-mono text-slate-500">Block Input: [${inVec.join(', ')}]</div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-4 gap-2 font-mono text-xs">
+                            ${vec.map((val, d) => {
+                                const mag = Math.min(1, Math.abs(val));
+                                const bg = val >= 0
+                                    ? `rgba(16, 185, 129, ${0.12 + mag * 0.35})`
+                                    : `rgba(244, 63, 94, ${0.12 + mag * 0.35})`;
+                                return `
+                                    <div class="px-3 py-1.5 rounded-lg border border-slate-700/80 text-center" style="background:${bg}">
+                                        <span class="block text-[9px] text-slate-400">d${d}</span>
+                                        <span class="font-semibold text-white">${val >= 0 ? '+' : ''}${val.toFixed(2)}</span>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ============================================================================
+        // STEP 4 RENDERER: NEXT-TOKEN PREDICTION & TEMPERATURE
+        // ============================================================================
+        function updateTemperature(val) {
+            state.temperature = parseFloat(val);
+            document.getElementById('tempValueDisplay').textContent = state.temperature.toFixed(2);
+
+            const intuitionEl = document.getElementById('tempIntuitionText');
+            if (state.temperature <= 0.35) {
+                intuitionEl.textContent = "Low Temperature (Greedy-like): The highest-logit token dominates near 100%. Output becomes highly deterministic and repetitive.";
+            } else if (state.temperature <= 1.05) {
+                intuitionEl.textContent = "Balanced Temperature: Top candidates are strongly favored while still permitting natural linguistic variation.";
+            } else {
+                intuitionEl.textContent = "High Temperature (Flat): Probabilities flatten out, giving lower-ranked creative or surprising tokens a much higher chance of being sampled.";
+            }
+            renderStep4();
+            if (state.currentStep === 5) renderStep5();
+        }
+
+        function renderStep4() {
+            const blockData = computeBlockVectors(state.tokens, 3);
+            const lastRow = blockData[blockData.length - 1];
+
+            document.getElementById('lastTokenBadge').textContent = `"${lastRow.token}"`;
+            document.getElementById('lastTokenVectorBox').innerHTML = lastRow.out.map((v, d) => `
+                <div class="bg-slate-950 border border-slate-800 rounded-lg p-2 text-center font-mono">
+                    <span class="block text-[10px] text-slate-500">d${d}</span>
+                    <span class="text-xs font-bold text-indigo-300">${v >= 0 ? '+' : ''}${v}</span>
+                </div>
+            `).join('');
+
+            const candidates = getNextTokenDistribution();
+            const barsEl = document.getElementById('vocabBarsContainer');
+
+            barsEl.innerHTML = candidates.map((c, idx) => {
+                const pct = (c.prob * 100).toFixed(1);
+                const isTop = idx === 0;
+                return `
+                    <div onclick="appendSpecificToken('${c.word}')"
+                        class="cursor-pointer group bg-slate-950/90 hover:bg-slate-900 border ${isTop ? 'border-amber-500/50' : 'border-slate-800'} rounded-xl p-3.5 transition">
+                        <div class="flex items-center justify-between text-xs font-mono mb-2">
+                            <div class="flex items-center gap-2">
+                                <span class="px-2 py-0.5 rounded font-bold ${isTop ? 'bg-amber-500 text-slate-950' : 'bg-slate-800 text-slate-300'}">
+                                    "${c.word}"
+                                </span>
+                                <span class="text-slate-500">ID: ${c.tokenId}</span>
+                                ${isTop ? '<span class="text-[10px] text-amber-400 uppercase">★ Top Candidate</span>' : ''}
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <span class="text-slate-400">Raw Logit: <strong class="text-slate-200">${c.logit.toFixed(1)}</strong></span>
+                                <span class="text-slate-400">z/T: <strong class="text-slate-200">${c.scaledLogit}</strong></span>
+                                <span class="text-sm font-bold ${isTop ? 'text-amber-300' : 'text-indigo-300'} w-14 text-right">${pct}%</span>
+                            </div>
+                        </div>
+                        <div class="w-full h-3 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+                            <div class="h-full rounded-full transition-all duration-300 ${
+                                isTop ? 'bg-gradient-to-r from-amber-500 to-orange-400' : 'bg-gradient-to-r from-indigo-500 to-purple-500'
+                            }" style="width: ${Math.max(2, c.prob * 100)}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ============================================================================
+        // STEP 5 RENDERER & AUTOREGRESSIVE ENGINE
+        // ============================================================================
+        function sampleFromDistribution(candidates) {
+            // Weighted random sampling according to temperature-scaled probabilities
+            // (with slight preference to top-3 so demos stay coherent)
+            const topSlice = candidates.slice(0, 4);
+            const sum = topSlice.reduce((a, b) => a + b.prob, 0);
+            let r = Math.random() * sum;
+            for (const item of topSlice) {
+                r -= item.prob;
+                if (r <= 0) return item;
+            }
+            return topSlice[0];
+        }
+
+        function appendSpecificToken(word) {
+            if (word === "<EOS>" || state.tokens.length >= 12) {
+                stopAutoGenerate();
+                return;
+            }
+            const dist = getNextTokenDistribution();
+            const chosen = dist.find(d => d.word === word) || dist[0];
+            const contextSnapshot = state.tokens.join(' ');
+
+            state.tokens.push(chosen.word);
+            state.selectedTokenIndex = state.tokens.length - 1;
+            state.generationLog.unshift({
+                stepNum: state.tokens.length - state.promptTokenCount,
+                context: contextSnapshot,
+                sampledToken: chosen.word,
+                prob: (chosen.prob * 100).toFixed(1) + '%'
+            });
+
+            animatePipelinePulse();
+            renderAll();
+        }
+
+        function generateSingleStep() {
+            if (state.tokens.length >= 11) {
+                stopAutoGenerate();
+                document.getElementById('cycleStatusLabel').textContent = "Max sequence length reached (Reset to generate again)";
+                return;
+            }
+            const dist = getNextTokenDistribution();
+            const sampled = sampleFromDistribution(dist);
+            if (sampled.word === "<EOS>") {
+                stopAutoGenerate();
+                document.getElementById('cycleStatusLabel').textContent = "Reached <EOS> (End of Sequence) token!";
+                return;
+            }
+            appendSpecificToken(sampled.word);
+        }
+
+        function animatePipelinePulse() {
+            const ids = ['pipe-1', 'pipe-2', 'pipe-3', 'pipe-4'];
+            ids.forEach((id, idx) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                setTimeout(() => {
+                    el.className = "p-2.5 rounded-lg border border-indigo-400 bg-indigo-600/30 text-xs font-mono text-white font-semibold transition";
+                    setTimeout(() => {
+                        el.className = "p-2.5 rounded-lg border border-slate-800 bg-slate-950 text-xs font-mono text-slate-400 transition";
+                    }, 320);
+                }, idx * 120);
+            });
+        }
+
+        function toggleAutoGenerate() {
+            if (state.isAutoGenerating) {
+                stopAutoGenerate();
+            } else {
+                if (state.tokens.length >= 11) {
+                    resetToBasePrompt();
+                }
+                state.isAutoGenerating = true;
+                document.getElementById('autoGenBtnLabel').textContent = "⏸ Pause Auto-Gen";
+                document.getElementById('cycleStatusLabel').textContent = "Autoregressive loop running...";
+                state.autoTimer = setInterval(() => {
+                    if (state.tokens.length >= 10) {
+                        stopAutoGenerate();
+                        document.getElementById('cycleStatusLabel').textContent = "Sequence completion finished!";
+                        return;
+                    }
+                    generateSingleStep();
+                }, 1150);
+            }
+        }
+
+        function stopAutoGenerate() {
+            state.isAutoGenerating = false;
+            if (state.autoTimer) {
+                clearInterval(state.autoTimer);
+                state.autoTimer = null;
+            }
+            const btnLabel = document.getElementById('autoGenBtnLabel');
+            if (btnLabel) btnLabel.textContent = "▶ Auto-Generate";
+        }
+
+        function resetToBasePrompt() {
+            stopAutoGenerate();
+            const parsed = parsePromptToTokens(state.basePrompt);
+            state.tokens = [...parsed];
+            state.promptTokenCount = parsed.length;
+            state.selectedTokenIndex = parsed.length - 1;
+            state.generationLog = [];
+            document.getElementById('cycleStatusLabel').textContent = "Reset to initial prompt";
+            renderAll();
+        }
+
+        function renderStep5() {
+            // Render Sequence Box
+            const seqBox = document.getElementById('step5SequenceBox');
+            seqBox.innerHTML = state.tokens.map((tok, i) => {
+                const isGen = i >= state.promptTokenCount;
+                const isNewest = i === state.tokens.length - 1 && isGen;
+                return `
+                    <span class="px-3 py-1.5 rounded-lg font-mono text-sm font-medium border transition ${
+                        isGen
+                            ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-200'
+                            : 'bg-indigo-500/15 border-indigo-500/30 text-indigo-200'
+                    } ${isNewest ? 'ring-2 ring-emerald-400 scale-105' : ''}">
+                        ${tok}
+                    </span>
+                `;
+            }).join('') + `
+                <span class="px-2.5 py-1 rounded border border-dashed border-slate-700 text-xs font-mono text-slate-500 animate-pulse">
+                    next?
+                </span>
+            `;
+
+            // Render Log
+            const logEl = document.getElementById('generationHistoryLog');
+            if (state.generationLog.length === 0) {
+                logEl.innerHTML = `<div class="text-xs text-slate-500 font-mono py-4 text-center">No tokens generated yet. Click "+ Generate Next Token" or "▶ Auto-Generate" above.</div>`;
+            } else {
+                logEl.innerHTML = state.generationLog.map(item => `
+                    <div class="bg-slate-950 border border-slate-800/90 rounded-lg p-2.5 text-xs font-mono flex items-center justify-between gap-2">
+                        <div class="truncate">
+                            <span class="text-slate-500">Step ${item.stepNum}:</span>
+                            <span class="text-slate-400">"${item.context}"</span>
+                            <span class="text-emerald-400 font-bold"> → "${item.sampledToken}"</span>
+                        </div>
+                        <span class="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shrink-0">
+                            P = ${item.prob}
+                        </span>
+                    </div>
+                `).join('');
+            }
+
+            // Render Right Candidate Panel
+            document.getElementById('step5TempBadge').textContent = `T = ${state.temperature.toFixed(2)}`;
+            document.getElementById('step5ConditionText').textContent = `"${state.tokens.join(' ')}"`;
+
+            const candidates = getNextTokenDistribution();
+            const candEl = document.getElementById('step5CandidateList');
+            candEl.innerHTML = candidates.map((c, idx) => {
+                const pct = (c.prob * 100).toFixed(1);
+                return `
+                    <button onclick="appendSpecificToken('${c.word}')"
+                        class="w-full text-left bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:border-indigo-500/50 rounded-xl p-2.5 transition">
+                        <div class="flex items-center justify-between text-xs font-mono mb-1">
+                            <span class="font-bold ${idx === 0 ? 'text-amber-300' : 'text-white'}">"${c.word}"</span>
+                            <span class="text-indigo-300 font-semibold">${pct}%</span>
+                        </div>
+                        <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden">
+                            <div class="h-full ${idx === 0 ? 'bg-amber-400' : 'bg-indigo-500'}" style="width: ${Math.max(2, c.prob * 100)}%"></div>
+                        </div>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function renderCurrentStep() {
+            if (state.currentStep === 1) renderStep1();
+            if (state.currentStep === 2) renderStep2();
+            if (state.currentStep === 3) renderStep3();
+            if (state.currentStep === 4) renderStep4();
+            if (state.currentStep === 5) renderStep5();
+        }
+
+        function renderAll() {
+            renderTabs();
+            renderGlobalStream();
+            renderCurrentStep();
+        }
+
+        window.onload = function () {
+            renderAll();
+        };
+    </script>
+</body>
+</html>

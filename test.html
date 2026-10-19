@@ -1,0 +1,760 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="e-Spec Project System Specification">
+    <title>e-Spec Project Specification</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        /* CSS Variables */
+        :root {
+            --primary: #0f172a; 
+            --secondary: #475569; 
+            --accent: #2563eb; 
+            --accent-light: #eff6ff; 
+            --bg: #f8fafc;
+            --text: #1e293b;
+            --white: #ffffff;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --success: #10b981;
+            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --transition: all 0.3s ease;
+        }
+
+        /* Base Resets & Typography */
+        * { box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        code {
+            font-family: 'Fira Code', monospace;
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #b91c1c;
+        }
+
+        :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+        /* Layout */
+        .presentation-container {
+            flex: 1; position: relative; display: flex; align-items: center; justify-content: center; padding: 20px;
+        }
+
+        /* Slide Styles */
+        .slide {
+            display: none; width: 100%; max-width: 1200px; height: 88vh; background: var(--white);
+            padding: 2.5rem 3.5rem; border-radius: 20px; box-shadow: var(--shadow-lg); overflow-y: auto;
+            opacity: 0; transform: translateY(15px); transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+        }
+
+        .slide.active { display: flex; flex-direction: column; animation: slideIn 0.5s forwards ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Typography */
+        h1 { color: var(--primary); font-size: clamp(2.5rem, 5vw, 4rem); margin-bottom: 0.5rem; letter-spacing: -0.02em; }
+        h2 { color: var(--primary); font-size: clamp(1.4rem, 3vw, 2rem); border-bottom: 3px solid var(--accent); display: inline-block; padding-bottom: 5px; margin-top: 0; margin-bottom: 1.5rem; }
+        h3 { color: var(--primary); font-size: 1.2rem; margin: 0 0 10px 0; font-weight: 600; }
+        p, li { line-height: 1.6; font-size: 1.05rem; color: #334155; }
+        strong { color: var(--primary); font-weight: 600; }
+
+        /* Grids & Cards */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 15px; align-items: start; }
+        .grid-3 { grid-template-columns: repeat(3, 1fr); }
+        .card { 
+            background: #f8fafc; padding: 20px; border-radius: 12px; 
+            border-left: 5px solid var(--accent); border: 1px solid #e2e8f0; border-left-width: 5px; transition: var(--transition);
+        }
+        .card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+
+        /* Architecture Diagram (Technical) */
+        .arch-diagram {
+            display: flex; align-items: center; justify-content: center; gap: 30px; padding: 20px;
+            background: #f8fafc; border-radius: 16px; border: 1px solid #e2e8f0; margin-top: 10px; flex-wrap: wrap;
+        }
+        .arch-mes { background: white; border: 2px solid var(--primary); border-radius: 12px; width: 100%; max-width: 400px; box-shadow: var(--shadow-sm); overflow: hidden; }
+        .arch-mes-header { background: var(--primary); color: white; padding: 12px 16px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+        .arch-mes-body { padding: 20px; }
+        .arch-nested-box { border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px; background: #f1f5f9; margin-bottom: 15px; }
+        .arch-nested-box-inner { border: 1px dashed #94a3b8; border-radius: 6px; padding: 12px; background: white; margin-top: 10px; }
+        .arch-list { list-style: none; padding-left: 0; margin: 10px 0 0 0; font-size: 0.9rem; }
+        .arch-list li { position: relative; padding-left: 20px; margin-bottom: 6px; color: var(--secondary); }
+        .arch-list li::before { content: "↳"; position: absolute; left: 0; color: var(--accent); font-weight: bold; }
+        .arch-msal { background: var(--accent-light); border: 1px solid #bfdbfe; color: var(--accent); text-align: center; padding: 10px; border-radius: 6px; font-weight: 600; font-size: 0.9rem; }
+        .arch-connector { display: flex; flex-direction: column; align-items: center; color: var(--accent); font-weight: 600; font-size: 0.9rem; text-align: center; min-width: 120px; }
+        .arch-arrow-right { font-size: 2rem; margin-bottom: -5px; animation: pulseX 2s infinite; }
+        .arch-arrow-down { font-size: 1.5rem; margin: 5px 0; color: #94a3b8; }
+        .arch-cloud { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; max-width: 320px; }
+        .cloud-node { background: white; border: 2px solid var(--accent); border-radius: 12px; padding: 15px; width: 100%; text-align: center; box-shadow: var(--shadow-sm); }
+        .cloud-node small { display: block; color: var(--secondary); margin-top: 5px; font-family: 'Fira Code', monospace; font-size: 0.75rem; }
+        .sp-node { border-color: #0284c7; background: #f0f9ff; }
+
+        @keyframes pulseX { 0% { transform: translateX(0); } 50% { transform: translateX(5px); } 100% { transform: translateX(0); } }
+
+        /* Business Architecture View (Simple) */
+        .simple-view {
+            display: flex; align-items: stretch; justify-content: center; gap: 15px; margin-top: 15px;
+            background: white; border: 2px dashed #cbd5e1; border-radius: 16px; padding: 25px; flex-wrap: wrap;
+        }
+        .simple-box {
+            background: #f1f5f9; border-radius: 12px; padding: 20px 15px; text-align: center;
+            font-size: 1.1rem; font-weight: 600; border: 2px solid #cbd5e1; box-shadow: var(--shadow-sm);
+            flex: 1; min-width: 180px; display: flex; flex-direction: column; justify-content: flex-start;
+        }
+        .simple-box small { display: block; font-weight: 400; font-size: 0.9rem; color: var(--secondary); margin-top: 8px; line-height: 1.4; }
+        .simple-arrow { align-self: center; text-align: center; font-size: 0.9rem; color: var(--secondary); font-weight: 600; padding: 0 5px; }
+        .simple-arrow::after { content: "➔"; display: block; font-size: 2rem; line-height: 0.8; color: #94a3b8; }
+
+        /* Flow Steps UI (Horizontal & Vertical) */
+        .flow-container { display: flex; flex-direction: column; gap: 8px; align-items: center; padding: 15px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;}
+        .flow-container-h { display: flex; flex-direction: row; gap: 10px; margin-top: 10px; align-items: center; justify-content: center; flex-wrap: wrap; }
+        .flow-step { display: flex; align-items: center; justify-content: center; gap: 10px; background: var(--white); padding: 12px 16px; border-radius: 8px; border: 1px solid #cbd5e1; text-align: center; min-width: 200px; box-shadow: var(--shadow-sm); font-weight: 500;}
+        .flow-step-sm { min-width: auto; font-size: 0.90rem; padding: 10px 12px; }
+        .flow-arrow { color: var(--secondary); text-align: center; font-size: 1.2rem; margin: 2px 0; }
+        .flow-arrow-h { color: var(--secondary); font-size: 1.5rem; margin: 0 5px; }
+        .flow-decision { background: #fffbeb; border-color: #fcd34d; font-weight: 600; }
+        .flow-branch { display: flex; gap: 30px; margin-top: 15px; justify-content: center; width: 100%; }
+        .flow-branch-col { display: flex; flex-direction: column; align-items: center; gap: 10px; flex: 1; padding: 15px; border-radius: 12px; border: 2px dashed transparent; }
+        
+        /* Flow Visual Map (Slide 11) */
+        .flow-map { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; align-items: start; margin-top: 15px; }
+        .flow-column { background: #f8fafc; border-radius: 12px; padding: 15px; border: 1px solid #e2e8f0; }
+        .flow-column h4 { margin: 0 0 15px 0; color: var(--secondary); font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.05em; text-align: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+        .flow-card { background: white; border: 1px solid #cbd5e1; border-left: 4px solid var(--accent); border-radius: 8px; padding: 12px; margin-bottom: 10px; box-shadow: var(--shadow-sm); }
+        .flow-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .flow-card-title { font-weight: 600; font-size: 0.95rem; color: var(--primary); }
+        .flow-card-desc { font-size: 0.85rem; color: var(--secondary); line-height: 1.4; }
+        
+        /* Tables */
+        .table-wrapper { overflow-x: auto; margin-top: 15px; border-radius: 8px; box-shadow: 0 0 0 1px #e2e8f0; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.95rem; background: var(--white); }
+        th { background: #f1f5f9; color: var(--primary); text-align: left; padding: 12px 16px; font-weight: 600; border-bottom: 2px solid #cbd5e1; }
+        td { padding: 12px 16px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+        tr:last-child td { border-bottom: none; }
+        .td-code { font-family: 'Fira Code', monospace; color: var(--accent); font-size: 0.9em; }
+
+        /* Badges */
+        .badge { font-size: 0.7rem; padding: 4px 10px; border-radius: 99px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; }
+        .b-blue { background: #dbeafe; color: #1e40af; }
+        .b-green { background: #dcfce7; color: #166534; }
+        .b-red { background: #fee2e2; color: #991b1b; }
+        .b-amber { background: #fef3c7; color: #92400e; }
+        .b-gray { background: #e2e8f0; color: #475569; }
+
+        /* Controls */
+        .controls {
+            height: 70px; display: flex; justify-content: center; align-items: center; gap: 24px;
+            background: var(--white); border-top: 1px solid #e2e8f0; box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.05); z-index: 10;
+        }
+        button {
+            padding: 10px 24px; border-radius: 8px; border: none; background: var(--primary); color: white;
+            cursor: pointer; font-weight: 600; font-size: 0.95rem; transition: var(--transition);
+            display: flex; align-items: center; gap: 8px;
+        }
+        button:disabled { background: #cbd5e1; cursor: not-allowed; }
+        button:hover:not(:disabled) { background: var(--accent); }
+        .slide-number { font-weight: 600; color: var(--secondary); font-variant-numeric: tabular-nums; }
+
+        @media (max-width: 1024px) { 
+            .grid-3 { grid-template-columns: 1fr; }
+            .flow-map { grid-template-columns: 1fr; }
+            .grid { grid-template-columns: 1fr; } 
+        }
+        @media (max-width: 768px) {
+            .slide { padding: 1.5rem; height: 90vh; }
+            h2 { font-size: 1.5rem; }
+            .arch-connector { transform: rotate(90deg); margin: 20px 0; }
+            .simple-arrow::after { transform: rotate(90deg); margin-top: 5px; }
+            .simple-box { min-width: 100%; }
+            .flow-branch { flex-direction: column; gap: 10px; }
+            .flow-arrow-h { transform: rotate(90deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <main class="presentation-container" aria-live="polite">
+        
+        <!-- SLIDE 1: TITLE -->
+        <section class="slide active">
+            <div style="text-align: center; margin: auto;">
+                <h1>e-Spec Project</h1>
+                <h3 style="color: var(--secondary); font-size: 1.5rem; margin-top: 10px;">System Specification</h3>
+                
+                <div style="margin-top: 4rem; display: flex; flex-wrap: wrap; justify-content: center; gap: 2rem; color: var(--secondary); background: #f1f5f9; padding: 1.5rem; border-radius: 12px; font-size: 1.1rem; max-width: 400px; margin-inline: auto;">
+                    <div><strong>Date:</strong> 2026-08-17</div>
+                </div>
+                
+                <div style="margin-top: 2.5rem; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                    <span class="badge b-gray">SharePoint Online</span>
+                    <span class="badge b-gray">Power Automate</span>
+                    <span class="badge b-gray">Power Apps</span>
+                    <span class="badge b-gray">MES (VB.NET)</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 2: CONTEXT & PURPOSE -->
+        <section class="slide">
+            <h2>1. Context</h2>
+            
+            <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 15px; align-items: stretch;">
+                <div class="card">
+                    <h3>Project Details</h3>
+                    <ul style="padding-left: 20px; margin-top: 10px;">
+                        <li><strong>Project Owner:</strong> TDD</li>
+                        <li><strong>Platform:</strong> M365 (SharePoint + Power Platform)</li>
+                        <li><strong>Display Target:</strong> MES (VB.NET WinForms)</li>
+                    </ul>
+                </div>
+                <div class="card" style="border-left-color: var(--success);">
+                    <h3>Feasibility</h3>
+                    <p style="margin-top: 10px;"><strong>Proven.</strong> The MES ↔ SharePoint PDF Proof of Concept (POC) is complete, verifying that shop-floor PCs can securely render SPO documents without M365 interactive logins.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 3: ECOSYSTEM ENVIRONMENT (NEW) -->
+        <section class="slide">
+            <h2>2. TTM-TDD Ecosystem Environment</h2>
+            <p>The foundational infrastructure and cloud environment required for the e-Spec system have been fully established and validated.</p>
+            
+            <div class="grid grid-3" style="margin-top: 40px; align-items: stretch;">
+                <div class="card" style="border-left-color: var(--success); text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px 20px;">
+                    <div style="font-size: 3.5rem; margin-bottom: 15px;">⚡</div>
+                    <h3 style="margin-bottom: 20px; font-size: 1.1rem;">TDD Power Platform Setup</h3>
+                    <span class="badge b-green" style="font-size: 0.9rem; padding: 8px 16px;">✅ Completed</span>
+                </div>
+                
+                <div class="card" style="border-left-color: var(--success); text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px 20px;">
+                    <div style="font-size: 3.5rem; margin-bottom: 15px;">📁</div>
+                    <h3 style="margin-bottom: 20px; font-size: 1.1rem;">TDD SharePoint Site Setup</h3>
+                    <span class="badge b-green" style="font-size: 0.9rem; padding: 8px 16px;">✅ Completed</span>
+                </div>
+                
+                <div class="card" style="border-left-color: var(--success); text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px 20px;">
+                    <div style="font-size: 3.5rem; margin-bottom: 15px;">🌐</div>
+                    <h3 style="margin-bottom: 5px; font-size: 1.1rem;">Network / Connectivity Setup</h3>
+                    <p style="font-size: 0.9rem; color: var(--secondary); margin-top: 0; margin-bottom: 20px;">MSAL.NET, Graph API + POC</p>
+                    <span class="badge b-green" style="font-size: 0.9rem; padding: 8px 16px;">✅ Completed</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 4: POC ARCHITECTURE -->
+        <section class="slide">
+            <h2>3. Proof of Concept: File Fetch Architecture</h2>
+            <p><strong>The Challenge:</strong> MES Workstations run on generic accounts and cannot provide an interactive user session to fetch PDFs. We needed a secure, silent, automated bridge.</p>
+            
+            <!-- Simple Business Chart -->
+            <h3 style="text-align: center; margin-top: 10px; color: var(--secondary); font-size: 1rem; text-transform: uppercase;">Business View (Integration Flow)</h3>
+            <div class="simple-view">
+                <div class="simple-box">
+                    <span style="font-size: 2.5rem; display: block; margin-bottom: 10px;">🖥️</span>
+                    <strong>1. MES App</strong>
+                    <small>Operator opens the spec screen on the shop floor (No M365 Login needed).</small>
+                </div>
+                <div class="simple-arrow"></div>
+                <div class="simple-box" style="border-color: var(--warning);">
+                    <span style="font-size: 2.5rem; display: block; margin-bottom: 10px;">🔑</span>
+                    <strong>2. Silent Bridge</strong>
+                    <small>App automatically requests secure background access via Entra ID.</small>
+                </div>
+                <div class="simple-arrow"></div>
+                <div class="simple-box sp-node" style="border-color: #0284c7;">
+                    <span style="font-size: 2.5rem; display: block; margin-bottom: 10px;">☁️</span>
+                    <strong>3. SharePoint</strong>
+                    <small>System authenticates the app and retrieves the latest active PDF.</small>
+                </div>
+                <div class="simple-arrow"></div>
+                <div class="simple-box" style="border-color: var(--success);">
+                    <span style="font-size: 2.5rem; display: block; margin-bottom: 10px;">📄</span>
+                    <strong>4. Native Display</strong>
+                    <small>PDF renders directly inside the MES interface using Edge WebView.</small>
+                </div>
+            </div>
+
+            <!-- Technical Chart -->
+            <h3 style="text-align: center; margin-top: 20px; color: var(--secondary); font-size: 1rem; text-transform: uppercase;">Technical Implementation</h3>
+            <div class="arch-diagram" style="padding: 10px;">
+                <!-- MES Workstation -->
+                <div class="arch-mes" style="max-width: 350px;">
+                    <div class="arch-mes-header" style="padding: 8px 12px;">
+                        MES Workstation
+                        <span class="badge b-red" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.5);">No Session</span>
+                    </div>
+                    <div class="arch-mes-body" style="padding: 10px;">
+                        <div class="arch-nested-box" style="margin-bottom: 8px;">
+                            <strong>frmMain</strong>
+                            <div class="arch-nested-box-inner" style="margin-top: 5px;">
+                                <strong>SPpdfService</strong>
+                                <ul class="arch-list">
+                                    <li><strong>WebView2</strong> <span style="color: var(--secondary);">◄── local temp .pdf</span></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="arch-msal" style="padding: 5px;">MSAL.NET (client credentials)</div>
+                    </div>
+                </div>
+
+                <div class="arch-connector">
+                    <div class="arch-arrow-right" style="font-size: 1.5rem;">→</div>
+                    HTTPS Token
+                </div>
+
+                <div class="arch-cloud">
+                    <div class="cloud-node" style="padding: 10px;">
+                        <strong>Entra ID</strong><small>Sites.Selected</small>
+                    </div>
+                    <div class="arch-arrow-down" style="margin: 0;">↓</div>
+                    
+                    <div class="cloud-node sp-node" style="padding: 10px;">
+                        <strong style="color: #0284c7;">SharePoint Online</strong><small style="color: #0369a1;">TTM-IT › e-Spec Test</small>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 5: STATE MACHINE -->
+        <section class="slide">
+            <h2>4. The State Machine (Folder States)</h2>
+            <p>The whole design is a state machine. A specification exists in exactly one of five folder states, and every workflow exists to move it between them safely.</p>
+            
+            <div style="display: flex; gap: 10px; justify-content: center; margin: 20px 0; flex-wrap: wrap;">
+                <span style="background: var(--bg); border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 6px; font-weight: 500;">Pending Distribution</span>
+                <span style="padding: 8px;">→</span>
+                <span style="background: var(--success); color: white; padding: 8px 16px; border-radius: 6px; font-weight: 500; box-shadow: 0 4px 6px -1px rgba(16,185,129,0.2);">Active Spec</span>
+                <span style="padding: 8px;">→</span>
+                <span style="background: var(--bg); border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 6px; font-weight: 500;">Temporarily Inactive</span>
+                <span style="padding: 8px;">→</span>
+                <span style="background: var(--bg); border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 6px; font-weight: 500;">Obsolete Spec</span>
+                <span style="padding: 8px;">→</span>
+                <span style="background: var(--primary); color: white; padding: 8px 16px; border-radius: 6px; font-weight: 500;">Archive Spec</span>
+            </div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Type of Folder</th>
+                            <th>Definition</th>
+                            <th>Publish to MES</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><strong>Pending Distribution Folder</strong></td><td>Pending PC to distribute the spec</td><td><span class="badge b-red">No</span></td></tr>
+                        <tr><td><strong>Active Spec Folder</strong></td><td>Contains all active spec for operational use.</td><td><span class="badge b-green">Yes</span></td></tr>
+                        <tr><td><strong>Temporarily Inactive Spec Folder</strong></td><td>Contains spec that are temporarily suspended from use but not fully obsolete.</td><td><span class="badge b-red">No</span></td></tr>
+                        <tr><td><strong>Obsolete Spec Folder</strong></td><td>Contains spec that are no longer use / old revision of spec</td><td><span class="badge b-red">No</span></td></tr>
+                        <tr><td><strong>Archive Spec Folder</strong></td><td>Contains all historical revision of spec for discontinued code and retained for long term record-keeping.</td><td><span class="badge b-red">No</span></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SLIDE 6: FLOW A -->
+        <section class="slide">
+            <h2>5. Flow A — Distribution</h2>
+            <p>The standard distribution path when a document is first approved.</p>
+            
+            <div class="grid" style="grid-template-columns: 1fr 1.3fr;">
+                <div class="card">
+                    <h3>Lifecycle Steps</h3>
+                    <ol style="padding-left: 20px; font-size: 0.95rem; display: flex; flex-direction: column; gap: 8px;">
+                        <li>Spec is Approved.</li>
+                        <li>Move to <strong>Pending Distribution</strong>.</li>
+                        <li>Notify Production Control.</li>
+                        <li><strong>Flow PC (Gate):</strong> Wait for PC to release.</li>
+                        <li>Move to <strong>Active Spec</strong> folder.</li>
+                        <li>Notify related production.</li>
+                        <li><strong>Publish to MES</strong> for live tracking.</li>
+                    </ol>
+                </div>
+                
+                <div class="flow-container" style="margin-top: 0;">
+                    <div class="flow-step flow-step-sm">1. Spec Approved ➔ Move to Pending</div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-step flow-step-sm">2. System Notifies Production Control</div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-step flow-decision flow-step-sm" style="border: 2px dashed var(--warning);">
+                        3. Calls Flow PC (Release Gate)
+                    </div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-step flow-step-sm">4. Move to Active Folder & Notify Prod</div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-step flow-step-sm" style="border-left: 4px solid var(--success);">5. <strong>Publish to MES</strong></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 7: FLOW PC (RELEASE GATE) -->
+        <section class="slide">
+            <h2>6. Flow PC — The Release Gate</h2>
+            <p>This is the <strong>only human decision point</strong> in the entire system. Both Flow A (Distribution) and Flow C (Revision) call this gate before a specification is published to MES.</p>
+            
+            <div style="background: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0; margin-top: 20px;">
+                <div class="flow-step flow-decision" style="margin: 0 auto;">
+                    Production Control Review
+                </div>
+                
+                <div class="flow-branch">
+                    <!-- Branch YES -->
+                    <div class="flow-branch-col" style="background: #f0fdf4; border-color: #bbf7d0;">
+                        <strong style="color: var(--success); font-size: 1.1rem;">✅ YES (Publish)</strong>
+                        <div class="flow-step flow-step-sm">Change Status to "Released"</div>
+                        <div class="flow-arrow">↓</div>
+                        <div class="flow-step flow-step-sm">Return to Flow A / C to Publish</div>
+                    </div>
+                    
+                    <!-- Branch NO -->
+                    <div class="flow-branch-col" style="background: #fffbeb; border-color: #fef08a;">
+                        <strong style="color: var(--warning); font-size: 1.1rem;">⏸️ NO (Hold)</strong>
+                        <div class="flow-step flow-step-sm">Leave in <strong>Pending Folder</strong></div>
+                        <div class="flow-arrow">↓</div>
+                        <div class="flow-step flow-step-sm">Initiate Daily Reminder Loop</div>
+                        <div class="flow-arrow">↺</div>
+                        <div class="flow-step flow-step-sm">Wait for PC Action</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 8: FLOW B (TEMP) -->
+        <section class="slide">
+            <h2>7. Flow B — Temporary Specs</h2>
+            <p>No approval required. Maximum <strong>14-day validity</strong>. Overrides original spec, then reverts automatically.</p>
+            
+            <div class="grid" style="grid-template-columns: 1fr 1.5fr;">
+                <div class="card" style="border-left-color: var(--danger);">
+                    <h3>Lifecycle Steps</h3>
+                    <ol style="font-size: 0.90rem; padding-left: 20px; display: flex; flex-direction: column; gap: 8px;">
+                        <li>Search existing spec ➔ Select machine no / type.</li>
+                        <li>Retrieve latest revision ➔ Upload temp spec.</li>
+                        <li>Set validity period (max 14 days) ➔ Validate inputs.</li>
+                        <li><strong>Activate:</strong> Temp spec moves to <em>Active</em> folder.</li>
+                        <li>Original spec moved to <em>Temporarily Inactive</em> folder.</li>
+                        <li>Temp spec published to MES production view.</li>
+                    </ol>
+                    
+                    <h4 style="margin: 15px 0 5px 0; color: var(--danger);">14-Day Timer Rules</h4>
+                    <table style="font-size: 0.85rem; background: transparent; width: 100%;">
+                        <tr style="border-bottom: 1px solid #cbd5e1;"><td>Day 10</td><td>1st Reminder</td></tr>
+                        <tr style="border-bottom: 1px solid #cbd5e1;"><td>Day 12</td><td>2nd Reminder</td></tr>
+                        <tr style="border-bottom: 1px solid #cbd5e1;"><td>Day 13</td><td>3rd Reminder</td></tr>
+                        <tr><td style="color: var(--danger);"><strong>Day 14</strong></td><td style="color: var(--danger);"><strong>Auto-Reverts</strong></td></tr>
+                    </table>
+                </div>
+
+                <!-- Visual Chart -->
+                <div style="background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; align-items: center;">
+                    
+                    <div class="flow-container-h">
+                        <div class="flow-step flow-step-sm">Upload & Set Timer</div>
+                        <div class="flow-arrow-h">→</div>
+                        <div class="flow-step flow-decision flow-step-sm">Activate Temp Spec</div>
+                    </div>
+                    
+                    <div class="flow-arrow">↓</div>
+
+                    <div class="flow-container-h" style="margin-top: 0;">
+                        <div class="flow-step flow-step-sm" style="background: #fef2f2; border-color: #fca5a5;">Original ➔ <strong>Temp Inactive</strong></div>
+                        <div class="flow-step flow-step-sm" style="background: #f0fdf4; border-color: #bbf7d0;">Temp ➔ <strong>Active (MES)</strong></div>
+                    </div>
+
+                    <div class="flow-arrow">↓</div>
+
+                    <div class="flow-container-h" style="margin-top: 0; background: white; padding: 10px; border-radius: 8px; border: 1px dashed #cbd5e1;">
+                        <span style="font-weight: 600; color: var(--secondary);">Timer Runs (Reminders day 10, 12, 13)</span>
+                    </div>
+
+                    <div class="flow-arrow">↓</div>
+
+                    <div class="flow-container-h" style="margin-top: 0;">
+                        <div class="flow-step flow-decision flow-step-sm" style="background: #fee2e2; border-color: #f87171; color: #991b1b;">
+                            Day 14 (or Manual) ➔ Auto-Revert System
+                        </div>
+                    </div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-container-h" style="margin-top: 0;">
+                        <div class="flow-step flow-step-sm" style="background: #f1f5f9;">Temp ➔ <strong>Obsolete</strong></div>
+                        <div class="flow-step flow-step-sm" style="background: #f0fdf4; border-color: #bbf7d0;">Original ➔ <strong>Active (MES)</strong></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 9: FLOW C (REVISION) -->
+        <section class="slide">
+            <h2>8. Flow C — Revision (The Cleanup Flow)</h2>
+            <p>Must gracefully handle the scenario where a Temporary Spec is active at the exact moment a new permanent revision is released.</p>
+            
+            <div class="card" style="margin-top: 10px;">
+                <p><strong>Path:</strong> New Revision Approved → Pending → <strong>Flow PC Gate</strong> → New Spec moves to <em>Active</em> folder.</p>
+                
+                <h3 style="margin-top: 20px;">Logic Branch: Is a Temporary Spec currently active?</h3>
+                <div class="grid" style="gap: 10px;">
+                    <div style="background: var(--white); padding: 15px; border-radius: 8px; border: 1px solid #cbd5e1;">
+                        <h4 style="margin: 0 0 10px 0; color: var(--danger);">YES (Conflict)</h4>
+                        <ol style="margin: 0; padding-left: 20px; font-size: 0.95rem;">
+                            <li>Inactivate Temp Spec → Move Temp to <em>Obsolete</em>.</li>
+                            <li>Inactivate Previous Original → Move from <em>Temp Inactive</em> to <em>Obsolete</em>.</li>
+                        </ol>
+                    </div>
+                    <div style="background: var(--white); padding: 15px; border-radius: 8px; border: 1px solid #cbd5e1;">
+                        <h4 style="margin: 0 0 10px 0; color: var(--success);">NO (Standard)</h4>
+                        <ol style="margin: 0; padding-left: 20px; font-size: 0.95rem;">
+                            <li>Inactivate Previous Original → Move from <em>Active</em> to <em>Obsolete</em>.</li>
+                        </ol>
+                    </div>
+                </div>
+                <p style="margin-top: 15px; font-size: 0.95rem;"><strong>Final Step:</strong> Notify related production and publish new revision to MES.</p>
+            </div>
+        </section>
+
+        <!-- SLIDE 10: DATA MODEL -->
+        <section class="slide">
+            <h2>9. Data Model (SharePoint Lists)</h2>
+            <p>Three lists. <strong>No Dataverse</strong> (confirmed, to avoid premium licensing overhead).</p>
+            
+            <div class="grid grid-3" style="gap: 15px;">
+                <div class="card">
+                    <h3>1. SpecRegister</h3>
+                    <p style="font-size: 0.85rem; color: var(--secondary); margin-top: 0;">Tracks current state of specs.</p>
+                    <ul style="font-size: 0.85rem; padding-left: 15px;">
+                        <li><code class="td-code">Title</code>: {TyreCode}-{Rev}</li>
+                        <li><code class="td-code">Revision</code> / <code class="td-code">Status</code></li>
+                        <li><code class="td-code">FolderState</code></li>
+                        <li><code class="td-code">FileItemId</code>: SP Item ID (what MES resolves)</li>
+                        <li><code class="td-code">SupersedesId</code>: Pointer to previous rev.</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <h3>2. SpecAudit</h3>
+                    <p style="font-size: 0.85rem; color: var(--secondary); margin-top: 0;">Append-only event log.</p>
+                    <ul style="font-size: 0.85rem; padding-left: 15px;">
+                        <li><code class="td-code">CorrelationId</code>: GUID grouping transactions</li>
+                        <li><code class="td-code">Action</code>: Approved, Released, Held, Obsoleted...</li>
+                        <li><code class="td-code">ActorUPN</code>: The real person (passed in)</li>
+                        <li><code class="td-code">Result</code>: Success / Failure</li>
+                        <li><code class="td-code">Details</code>: JSON payload config</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h3>3. SpecConfig</h3>
+                    <p style="font-size: 0.85rem; color: var(--secondary); margin-top: 0;">Operational parameters.</p>
+                    <ul style="font-size: 0.85rem; padding-left: 15px;">
+                        <li>Reminder interval days</li>
+                        <li>PC recipient groups</li>
+                        <li>Folder paths</li>
+                        <li>Notification text templates</li>
+                    </ul>
+                    <p style="font-size: 0.8rem; margin-top: 10px;"><em>Kept out of flow expressions to allow updates without editing code.</em></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 11: FLOW ARCHITECTURE -->
+        <section class="slide">
+            <h2>10. Power Automate Flow Architecture</h2>
+            <p>12 discrete logic flows categorized by function to ensure maintainability and modular updates.</p>
+            
+            <div class="flow-map">
+                <!-- Column 1: Core Lifecycle -->
+                <div class="flow-column">
+                    <h4>Core Lifecycle</h4>
+                    
+                    <div class="flow-card">
+                        <div class="flow-card-header">
+                            <span class="flow-card-title">0. Spec-Approval</span>
+                            <span class="badge b-gray">Trigger</span>
+                        </div>
+                        <div class="flow-card-desc">Net-new scope (does not exist today). Kicks off system.</div>
+                    </div>
+
+                    <div class="flow-card">
+                        <div class="flow-card-header">
+                            <span class="flow-card-title">1. A-Distribution</span>
+                            <span class="badge b-gray">Trigger</span>
+                        </div>
+                        <div class="flow-card-desc">Registers row, moves to Pending, alerts PC.</div>
+                    </div>
+
+                    <div class="flow-card" style="border-left-color: var(--warning);">
+                        <div class="flow-card-header">
+                            <span class="flow-card-title">2. PC-Release</span>
+                            <span class="badge b-amber">Instant</span>
+                        </div>
+                        <div class="flow-card-desc">The only human decision point. Approves/Holds.</div>
+                    </div>
+
+                    <div class="flow-card">
+                        <div class="flow-card-header">
+                            <span class="flow-card-title">8. C-Revision</span>
+                            <span class="badge b-gray">Trigger</span>
+                        </div>
+                        <div class="flow-card-desc">Handles temp-spec conflict logic for new versions.</div>
+                    </div>
+                </div>
+
+                <!-- Column 2: Temporary Specs -->
+                <div class="flow-column">
+                    <h4>Temporary Specs</h4>
+
+                    <div class="flow-card">
+                        <div class="flow-card-header">
+                            <span class="flow-card-title">4. B-TempActivate</span>
+                            <span class="badge b-amber">Instant</span>
+                        </div>
+                        <div class="flow-card-desc">Validation gate: verifies code, machine, &lt;14d validity.</div>
+                    </div>
+
+                    <div class="flow-card">
+                        <div class="flow-card-header">
+                            <span class="flow-card-title">3. PC-HoldReminder</span>
+                            <span class="badge b-blue">Sched</span>
+                        </div>
+                        <div class="flow-card-desc">Runs daily while status = Hold.</div>
+                    </div>
+
+                    <div class="flow-card">
+                        <div class="flow-card-header">
+                            <span class="flow-card-title">5, 6, 7. B-Temp Timers</span>
+                            <span class="badge b-blue">Sched</span>
+                        </div>
+                        <div class="flow-card-desc">Handles Day 10/12/13 reminders, Day 14 auto-expiry, and Manual revert branches.</div>
+                    </div>
+                </div>
+
+                <!-- Column 3: Shared Utilities -->
+                <div class="flow-column">
+                    <h4>Shared Utilities</h4>
+                    <p style="font-size: 0.85rem; color: var(--secondary); margin-top: 0;">Modular logic called by parent flows to prevent duplication.</p>
+
+                    <div class="flow-card" style="border-left-color: var(--success);">
+                        <div class="flow-card-header">
+                            <span class="flow-card-title">9. Util-MoveSpec</span>
+                            <span class="badge b-green">Child</span>
+                        </div>
+                        <div class="flow-card-desc">Every physical SharePoint folder move passes through here.</div>
+                    </div>
+
+                    <div class="flow-card" style="border-left-color: var(--success);">
+                        <div class="flow-card-header">
+                            <span class="flow-card-title">10. Util-Notify</span>
+                            <span class="badge b-green">Child</span>
+                        </div>
+                        <div class="flow-card-desc">Standardizes all Teams/Email alert formatting.</div>
+                    </div>
+
+                    <div class="flow-card" style="border-left-color: var(--success);">
+                        <div class="flow-card-header">
+                            <span class="flow-card-title">11. Util-WriteAudit</span>
+                            <span class="badge b-green">Child</span>
+                        </div>
+                        <div class="flow-card-desc">Appends events to the SpecAudit event log.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 12: BUILD RULES -->
+        <section class="slide">
+            <h2>11. Golden Build Rules</h2>
+            <p>Five constraints that shape the implementation.</p>
+            
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 15px;">
+                <div class="flow-step" style="justify-content: flex-start; text-align: left;">
+                    <span class="badge b-blue" style="font-size: 1rem; padding: 6px 12px;">1</span>
+                    <div><strong>Register first, folder second.</strong> Every state change writes to SpecRegister <em>before</em> the file moves. MES resolves <code>FileItemId</code>, never a folder path.</div>
+                </div>
+                <div class="flow-step" style="justify-content: flex-start; text-align: left;">
+                    <span class="badge b-blue" style="font-size: 1rem; padding: 6px 12px;">2</span>
+                    <div><strong>Actor is passed in, never inferred.</strong> Flows run as service accounts, so "Created By" is meaningless. The real user UPN comes in as a parameter.</div>
+                </div>
+                <div class="flow-step" style="justify-content: flex-start; text-align: left;">
+                    <span class="badge b-blue" style="font-size: 1rem; padding: 6px 12px;">3</span>
+                    <div><strong>One CorrelationId per transaction.</strong> Generated in the parent flow and threaded through every child call for end-to-end tracing.</div>
+                </div>
+                <div class="flow-step" style="justify-content: flex-start; text-align: left;">
+                    <span class="badge b-blue" style="font-size: 1rem; padding: 6px 12px;">4</span>
+                    <div><strong>Failures are logged explicitly.</strong> Each action group sits in a Scope with a parallel failure Scope writing <code>Result = Failure</code> and setting the register row to <code>NeedsAttention</code>.</div>
+                </div>
+                <div class="flow-step" style="justify-content: flex-start; text-align: left;">
+                    <span class="badge b-blue" style="font-size: 1rem; padding: 6px 12px;">5</span>
+                    <div><strong>No true transactions exist.</strong> Any flow that can inadvertently leave two specs Active must have a rigid failure branch that flags and alerts admins immediately.</div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="controls">
+        <button id="prevBtn" onclick="changeSlide(-1)" aria-label="Previous Slide" disabled>
+            <span>←</span> Previous
+        </button>
+        <div class="slide-number" aria-live="polite">
+            Slide <span id="currentNum">1</span> of 12
+        </div>
+        <button id="nextBtn" onclick="changeSlide(1)" aria-label="Next Slide">
+            Next <span>→</span>
+        </button>
+    </footer>
+
+    <script>
+        let currentSlide = 0;
+        const getSlides = () => document.querySelectorAll('.slide');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const currentNum = document.getElementById('currentNum');
+
+        function changeSlide(direction) {
+            const slides = getSlides();
+            
+            // Hide current
+            slides[currentSlide].classList.remove('active');
+            slides[currentSlide].setAttribute('aria-hidden', 'true');
+            
+            // Increment/Decrement
+            currentSlide += direction;
+            
+            // Show new
+            slides[currentSlide].classList.add('active');
+            slides[currentSlide].setAttribute('aria-hidden', 'false');
+
+            // Update UI State
+            prevBtn.disabled = (currentSlide === 0);
+            nextBtn.disabled = (currentSlide === slides.length - 1);
+            currentNum.innerText = currentSlide + 1;
+        }
+
+        document.addEventListener('keydown', (e) => {
+            const totalSlides = getSlides().length;
+            if (e.key === 'ArrowRight' && currentSlide < totalSlides - 1) changeSlide(1);
+            if (e.key === 'ArrowLeft' && currentSlide > 0) changeSlide(-1);
+        });
+    </script>
+</body>
+</html>

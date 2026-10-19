@@ -1,0 +1,1755 @@
+ <!DOCTYPE html>
+<html lang="en" class="scroll-smooth dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AP Tensor Lab | Applied AI, Data Systems & Learning in Public</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        obsidian: '#060913',
+                        slateDark: '#0d1322',
+                        cyanGlow: '#38bdf8',
+                        tealGlow: '#2dd4bf',
+                        blueGlow: '#0ea5e9',
+                    },
+                    boxShadow: {
+                        'neon-cyan': '0 0 20px rgba(56, 189, 248, 0.25)',
+                        'neon-teal': '0 0 20px rgba(45, 212, 191, 0.25)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #060913;
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+
+        /* Subtle Technical Grid Overlay */
+        .bg-grid-pattern {
+            background-size: 40px 40px;
+            background-image: 
+                linear-gradient(to right, rgba(0, 242, 254, 0.04) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 242, 254, 0.04) 1px, transparent 1px);
+        }
+
+        /* Glassmorphism Surfaces */
+        .glass-card {
+            background: rgba(13, 19, 34, 0.72);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(0, 242, 254, 0.14);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(0, 245, 212, 0.4);
+            box-shadow: 0 10px 30px -10px rgba(0, 242, 254, 0.18);
+        }
+
+        /* Gradient Text */
+        .text-gradient {
+            background: linear-gradient(135deg, #00f5d4 0%, #00f2fe 50%, #4facfe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Custom Range Sliders */
+        input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255, 255, 255, 0.1);
+            height: 6px;
+            border-radius: 999px;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #00f5d4;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 245, 212, 0.8);
+            transition: transform 0.15s ease;
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #080c14;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00f2fe;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.06); }
+        }
+        .animate-pulse-glow {
+            animation: pulseGlow 3s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased selection:bg-cyanGlow/20 selection:text-tealGlow bg-grid-pattern relative">
+
+    <!-- Toast Notification Box -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none glass-card px-5 py-3.5 rounded-xl border border-tealGlow/50 shadow-neon-teal flex items-center gap-3">
+        <i data-lucide="check-circle-2" class="w-5 h-5 text-tealGlow"></i>
+        <span id="toast-message" class="text-sm font-medium text-white">Copied to clipboard!</span>
+    </div>
+
+    <!-- 1. STICKY NAVIGATION BAR -->
+    <header class="sticky top-0 z-40 w-full backdrop-blur-xl bg-obsidian/80 border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <!-- Brand Logo (Custom SVG: Organic Axon -> Geometric Tensor) -->
+            <a href="#" class="flex items-center gap-3.5 group">
+                <div class="relative w-11 h-11 rounded-xl bg-slateDark border border-cyanGlow/30 flex items-center justify-center shadow-neon-cyan group-hover:border-tealGlow transition-colors">
+                    <svg class="w-8 h-8" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="apGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#00f5d4" />
+                                <stop offset="50%" stop-color="#00f2fe" />
+                                <stop offset="100%" stop-color="#4facfe" />
+                            </linearGradient>
+                        </defs>
+                        <!-- Left: Organic Axon Branches -->
+                        <path d="M8 20C14 20 18 26 24 32M6 32C14 32 18 32 24 32M8 44C14 44 18 38 24 32M14 12C18 16 20 24 24 32M14 52C18 48 20 40 24 32" stroke="url(#apGrad)" stroke-width="2.5" stroke-linecap="round"/>
+                        <circle cx="8" cy="20" r="2.5" fill="#00f5d4"/>
+                        <circle cx="6" cy="32" r="2.5" fill="#00f5d4"/>
+                        <circle cx="8" cy="44" r="2.5" fill="#00f5d4"/>
+                        <circle cx="24" cy="32" r="3.5" fill="#00f2fe"/>
+                        <!-- Right: Geometric Tensor Matrix -->
+                        <rect x="32" y="16" width="22" height="32" rx="2" stroke="url(#apGrad)" stroke-width="2.2"/>
+                        <line x1="32" y1="26.6" x2="54" y2="26.6" stroke="url(#apGrad)" stroke-width="1.8"/>
+                        <line x1="32" y1="37.3" x2="54" y2="37.3" stroke="url(#apGrad)" stroke-width="1.8"/>
+                        <line x1="43" y1="16" x2="43" y2="48" stroke="url(#apGrad)" stroke-width="1.8"/>
+                        <line x1="24" y1="32" x2="32" y2="32" stroke="#00f2fe" stroke-width="2.5"/>
+                        <line x1="32" y1="48" x2="54" y2="16" stroke="#4facfe" stroke-width="1.5" stroke-dasharray="2 2"/>
+                        <circle cx="32" cy="16" r="2.5" fill="#00f2fe"/>
+                        <circle cx="54" cy="16" r="2.5" fill="#4facfe"/>
+                        <circle cx="32" cy="48" r="2.5" fill="#00f2fe"/>
+                        <circle cx="54" cy="48" r="2.5" fill="#4facfe"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="font-extrabold tracking-tight text-lg text-gradient">AP</span>
+                        <span class="font-bold tracking-wider text-base text-white">TENSOR LAB</span>
+                    </div>
+                    <p class="text-[11px] font-mono text-slate-400 tracking-widest uppercase">Axon → Perceptron</p>
+                </div>
+            </a>
+
+            <!-- Desktop Navigation Links -->
+            <nav class="hidden md:flex items-center gap-7 text-sm font-medium text-slate-300">
+                <a href="#about" class="hover:text-tealGlow transition-colors">About</a>
+                <a href="#simulator" class="hover:text-tealGlow transition-colors">Lab 01: Perceptron</a>
+                <a href="#transformer" class="hover:text-tealGlow transition-colors flex items-center gap-1.5 text-cyanGlow font-semibold">
+                    <span class="w-2 h-2 rounded-full bg-tealGlow animate-ping"></span>
+                    Lab 02: Transformer
+                </a>
+                <a href="#workbench" class="hover:text-tealGlow transition-colors">Workbench</a>
+                <a href="#signal" class="hover:text-tealGlow transition-colors">The Signal</a>
+            </nav>
+
+            <!-- CTA Button & Mobile Menu Toggle -->
+            <div class="flex items-center gap-3">
+                <a href="https://www.linkedin.com/company/ap-tensor-lab" target="_blank" rel="noopener noreferrer" 
+                   class="hidden sm:inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-obsidian bg-gradient-to-r from-tealGlow via-cyanGlow to-blueGlow hover:opacity-95 transition-all shadow-neon-cyan">
+                    <i data-lucide="linkedin" class="w-4 h-4"></i>
+                    <span>Follow on LinkedIn</span>
+                </a>
+                <button id="mobile-menu-btn" class="md:hidden p-2.5 rounded-xl glass-card text-slate-200 hover:text-tealGlow" aria-label="Toggle Menu">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Drawer -->
+        <div id="mobile-menu" class="hidden md:hidden border-t border-white/10 bg-slateDark/95 backdrop-blur-xl px-4 pt-3 pb-6 space-y-2.5">
+            <a href="#about" class="mobile-link block px-3 py-2 rounded-lg text-sm font-medium text-slate-200 hover:bg-white/5 hover:text-tealGlow">About (Axon → Perceptron)</a>
+            <a href="#simulator" class="mobile-link block px-3 py-2 rounded-lg text-sm font-medium text-slate-200 hover:bg-white/5 hover:text-tealGlow">Lab 01: Perceptron Simulator</a>
+            <a href="#transformer" class="mobile-link block px-3 py-2 rounded-lg text-sm font-semibold text-tealGlow bg-tealGlow/10">Lab 02: Transformer Self-Attention</a>
+            <a href="#workbench" class="mobile-link block px-3 py-2 rounded-lg text-sm font-medium text-slate-200 hover:bg-white/5 hover:text-tealGlow">The Workbench (Builds)</a>
+            <a href="#signal" class="mobile-link block px-3 py-2 rounded-lg text-sm font-medium text-slate-200 hover:bg-white/5 hover:text-tealGlow">The AI Signal & Schedule</a>
+            <a href="https://www.linkedin.com/company/ap-tensor-lab" target="_blank" rel="noopener noreferrer" 
+               class="w-full mt-2 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold text-obsidian bg-gradient-to-r from-tealGlow to-cyanGlow">
+                <i data-lucide="linkedin" class="w-4 h-4"></i>
+                <span>Follow AP Tensor Lab on LinkedIn</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- 2. HERO SECTION WITH INTERACTIVE NEURAL CANVAS -->
+    <section class="relative min-h-[88vh] flex items-center overflow-hidden py-16 lg:py-24">
+        <!-- Interactive HTML5 Canvas Background -->
+        <canvas id="neural-canvas" class="absolute inset-0 w-full h-full pointer-events-auto z-0 opacity-75"></canvas>
+        
+        <!-- Ambient Radial Glows -->
+        <div class="absolute -top-32 -left-32 w-96 h-96 bg-tealGlow/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute top-1/2 -right-32 w-96 h-96 bg-blueGlow/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                
+                <!-- Left Column: Lab Mission & CTAs -->
+                <div class="lg:col-span-7 space-y-6">
+                    <div class="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full glass-card border-tealGlow/30">
+                        <span class="w-2 h-2 rounded-full bg-tealGlow animate-pulse"></span>
+                        <span class="font-mono text-xs text-tealGlow tracking-wide">[ Axon -> Perceptron ] • Applied AI engineering, data science notes, and neural system builds</span>
+                    </div>
+
+                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.12]">
+                        AP TENSOR LAB: <span class="text-gradient">Where Signal Becomes Intelligence.</span>
+                    </h1>
+
+                    <p class="text-base sm:text-lg text-slate-300 max-w-2xl leading-relaxed font-normal">
+                        Welcome to <strong class="text-white font-semibold">AP Tensor Lab</strong>—an independent AI engineering sandbox, research notebook, and project hub bridging biological intuition (<span class="text-tealGlow font-mono">Axon</span>) and computational logic (<span class="text-cyanGlow font-mono">Perceptron</span>).
+                    </p>
+
+                    <div class="flex flex-wrap items-center gap-3.5 pt-2">
+                        <a href="#transformer" class="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-xl font-semibold text-sm text-obsidian bg-gradient-to-r from-tealGlow via-cyanGlow to-blueGlow hover:scale-[1.02] active:scale-[0.99] transition-all shadow-neon-cyan">
+                            <i data-lucide="sparkles" class="w-4 h-4"></i>
+                            <span>Launch Transformer Visualizer</span>
+                        </a>
+                        <a href="#simulator" class="inline-flex items-center gap-2.5 px-5 py-3.5 rounded-xl font-semibold text-sm text-white glass-card hover:border-tealGlow/60 transition-all">
+                            <i data-lucide="sliders" class="w-4 h-4 text-tealGlow"></i>
+                            <span>Perceptron Sim</span>
+                        </a>
+                        <a href="#workbench" class="inline-flex items-center gap-2 px-5 py-3.5 rounded-xl font-semibold text-sm text-slate-300 hover:text-white glass-card transition-all">
+                            <i data-lucide="cpu" class="w-4 h-4 text-cyanGlow"></i>
+                            <span>Workbench</span>
+                        </a>
+                    </div>
+
+                    <!-- Lab Quick Telemetry -->
+                    <div class="pt-6 grid grid-cols-3 gap-4 max-w-lg border-t border-white/10">
+                        <div>
+                            <p class="font-mono text-xs text-slate-400 uppercase">Interactive Labs</p>
+                            <p class="text-sm sm:text-base font-bold text-white mt-0.5">Perceptron & Attention</p>
+                        </div>
+                        <div>
+                            <p class="font-mono text-xs text-slate-400 uppercase">Methodology</p>
+                            <p class="text-sm sm:text-base font-bold text-tealGlow mt-0.5">Build in Public</p>
+                        </div>
+                        <div>
+                            <p class="font-mono text-xs text-slate-400 uppercase">Signal Ratio</p>
+                            <p class="text-sm sm:text-base font-bold text-cyanGlow mt-0.5">100% Code & Math</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Live Terminal / Code Preview Card -->
+                <div class="lg:col-span-5">
+                    <div class="glass-card rounded-2xl overflow-hidden border border-cyanGlow/25 shadow-2xl">
+                        <!-- Terminal Header -->
+                        <div class="bg-slate-900/90 px-4 py-3 border-b border-white/10 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full bg-rose-500/80"></span>
+                                <span class="w-3 h-3 rounded-full bg-amber-400/80"></span>
+                                <span class="w-3 h-3 rounded-full bg-emerald-400/80"></span>
+                                <span class="ml-2 font-mono text-xs text-slate-400">ap_tensor_attention.py</span>
+                            </div>
+                            <button id="copy-code-btn" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-mono text-slate-300 hover:text-tealGlow transition-colors">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                                <span>Copy</span>
+                            </button>
+                        </div>
+
+                        <!-- Code Body -->
+                        <div class="p-5 font-mono text-xs sm:text-[12.5px] leading-relaxed overflow-x-auto bg-obsidian/90">
+<pre id="code-snippet" class="text-slate-300"><code><span class="text-purple-400">import</span> torch
+<span class="text-purple-400">import</span> torch.nn <span class="text-purple-400">as</span> nn
+<span class="text-purple-400">import</span> math
+
+<span class="text-slate-500"># AP Tensor Lab: AxonPerceptron + Self-Attention</span>
+<span class="text-purple-400">class</span> <span class="text-tealGlow">ScaledDotProductAttention</span>(nn.Module):
+    <span class="text-purple-400">def</span> <span class="text-blueGlow">forward</span>(self, Q, K, V, tau=<span class="text-emerald-300">1.0</span>, mask=<span class="text-amber-300">None</span>):
+        d_k = Q.size(-<span class="text-emerald-300">1</span>)
+        scores = (Q @ K.transpose(-<span class="text-emerald-300">2</span>, -<span class="text-emerald-300">1</span>)) / (math.sqrt(d_k) * tau)
+        <span class="text-purple-400">if</span> mask <span class="text-purple-400">is not</span> <span class="text-amber-300">None</span>:
+            scores = scores.masked_fill(mask == <span class="text-emerald-300">0</span>, -<span class="text-emerald-300">1e9</span>)
+        weights = torch.softmax(scores, dim=-<span class="text-emerald-300">1</span>)
+        <span class="text-purple-400">return</span> weights @ V, weights
+
+<span class="text-purple-400">class</span> <span class="text-cyanGlow">AxonPerceptronBlock</span>(nn.Module):
+    <span class="text-purple-400">def</span> <span class="text-blueGlow">__init__</span>(self, d_model=<span class="text-emerald-300">512</span>):
+        <span class="text-purple-400">super</span>().__init__()
+        self.attn = ScaledDotProductAttention()
+        self.ffn = nn.Sequential(nn.Linear(d_model, d_model), nn.GELU())</code></pre>
+                        </div>
+
+                        <!-- Terminal Output Bar -->
+                        <div class="bg-slate-900/95 px-4 py-2.5 border-t border-white/10 flex items-center justify-between font-mono text-xs">
+                            <span class="text-emerald-400 flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                                Attention Matrix: Softmax(QK^T / √d_k) • READY
+                            </span>
+                            <span class="text-slate-500">PyTorch 2.x</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. ABOUT SECTION: THE ORIGIN STORY (AXON + PERCEPTRON = AP) -->
+    <section id="about" class="py-20 border-t border-white/10 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <span class="font-mono text-xs uppercase tracking-widest text-tealGlow">Deciphering the Monogram</span>
+                <h2 class="text-3xl sm:text-4xl font-bold text-white mt-2">Why "AP Tensor Lab"?</h2>
+                <p class="text-slate-400 mt-3 text-base">
+                    Beyond the founder's initials, <strong class="text-white">AP</strong> encodes the foundational story of artificial intelligence—connecting biological signal transmission with mathematical computation.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-11 gap-6 items-stretch">
+                <!-- Card 1: AXON -->
+                <div class="lg:col-span-5 glass-card rounded-2xl p-7 relative overflow-hidden group">
+                    <div class="flex items-center justify-between mb-6">
+                        <span class="px-3 py-1 rounded-lg bg-tealGlow/10 border border-tealGlow/30 font-mono text-xs text-tealGlow font-semibold">
+                            [ A ] • Biological Root
+                        </span>
+                        <i data-lucide="network" class="w-7 h-7 text-tealGlow"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-2">The Axon</h3>
+                    <p class="text-slate-300 text-sm leading-relaxed mb-5">
+                        In neurobiology, the <strong class="text-tealGlow">axon</strong> is the transmission line of a biological neuron that conducts electrical impulses away from the cell body to connect with other neurons. It represents natural intuition, sensory input, and organic connectivity.
+                    </p>
+                    <div class="pt-4 border-t border-white/10 flex items-center gap-4 text-xs font-mono text-slate-400">
+                        <span>• Signal Propagation</span>
+                        <span>• Synaptic Routing</span>
+                    </div>
+                </div>
+
+                <!-- Center Bridge: TENSOR -->
+                <div class="lg:col-span-1 flex flex-col items-center justify-center py-4">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-tealGlow via-cyanGlow to-blueGlow p-0.5 shadow-neon-cyan flex items-center justify-center">
+                        <div class="w-full h-full bg-obsidian rounded-[14px] flex items-center justify-center">
+                            <i data-lucide="arrow-left-right" class="w-5 h-5 text-cyanGlow"></i>
+                        </div>
+                    </div>
+                    <span class="font-mono text-[11px] text-cyanGlow uppercase tracking-widest mt-2">Tensors</span>
+                </div>
+
+                <!-- Card 2: PERCEPTRON -->
+                <div class="lg:col-span-5 glass-card rounded-2xl p-7 relative overflow-hidden group">
+                    <div class="flex items-center justify-between mb-6">
+                        <span class="px-3 py-1 rounded-lg bg-blueGlow/10 border border-blueGlow/30 font-mono text-xs text-blueGlow font-semibold">
+                            [ P ] • Computational Unit
+                        </span>
+                        <i data-lucide="binary" class="w-7 h-7 text-blueGlow"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-2">The Perceptron</h3>
+                    <p class="text-slate-300 text-sm leading-relaxed mb-5">
+                        Invented by Frank Rosenblatt in 1957, the <strong class="text-blueGlow">perceptron</strong> is the foundational mathematical unit of artificial neural networks. By applying weights, biases, and activation thresholds to multi-dimensional <strong class="text-white">tensors</strong>, raw signals become machine intelligence.
+                    </p>
+                    <div class="pt-4 border-t border-white/10 flex items-center gap-4 text-xs font-mono text-slate-400">
+                        <span>• Matrix Weights</span>
+                        <span>• Non-Linear Activation</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. INTERACTIVE LAB 01: PERCEPTRON & TENSOR FORWARD-PASS SIMULATOR -->
+    <section id="simulator" class="py-20 border-t border-white/10 relative bg-slateDark/30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-12">
+                <span class="font-mono text-xs uppercase tracking-widest text-tealGlow">Interactive Lab 01 • Single Neuron Mechanics</span>
+                <h2 class="text-3xl sm:text-4xl font-bold text-white mt-2">Perceptron & Tensor Forward-Pass Simulator</h2>
+                <p class="text-slate-400 mt-2 text-sm sm:text-base">
+                    Adjust the input signals ($x_i$), synaptic weights ($w_i$), bias ($b$), and activation function ($\text{ReLU}$, $\text{Sigmoid}$, $\text{Tanh}$, $\text{GELU}$) to watch a biological axon impulse transform into a perceptron output.
+                </p>
+            </div>
+
+            <div class="glass-card rounded-3xl p-6 sm:p-10 border border-cyanGlow/30">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                    
+                    <!-- Controls Column -->
+                    <div class="lg:col-span-5 space-y-6">
+                        <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                            <h3 class="font-mono text-sm uppercase tracking-wider text-white font-semibold flex items-center gap-2">
+                                <i data-lucide="sliders-horizontal" class="w-4 h-4 text-tealGlow"></i>
+                                Input & Weight Tensors
+                            </h3>
+                            <button id="reset-sim-btn" class="text-xs font-mono text-slate-400 hover:text-tealGlow transition-colors">
+                                Reset Defaults
+                            </button>
+                        </div>
+
+                        <!-- Pair 1 -->
+                        <div class="space-y-2 bg-obsidian/60 p-3.5 rounded-xl border border-white/5">
+                            <div class="flex justify-between text-xs font-mono">
+                                <span class="text-tealGlow">Axon Input $x_1$: <strong id="val-x1">0.80</strong></span>
+                                <span class="text-cyanGlow">Weight $w_1$: <strong id="val-w1">1.20</strong></span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <input type="range" id="in-x1" min="-2" max="2" step="0.1" value="0.8">
+                                <input type="range" id="in-w1" min="-2" max="2" step="0.1" value="1.2">
+                            </div>
+                        </div>
+
+                        <!-- Pair 2 -->
+                        <div class="space-y-2 bg-obsidian/60 p-3.5 rounded-xl border border-white/5">
+                            <div class="flex justify-between text-xs font-mono">
+                                <span class="text-tealGlow">Axon Input $x_2$: <strong id="val-x2">-0.40</strong></span>
+                                <span class="text-cyanGlow">Weight $w_2$: <strong id="val-w2">-0.90</strong></span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <input type="range" id="in-x2" min="-2" max="2" step="0.1" value="-0.4">
+                                <input type="range" id="in-w2" min="-2" max="2" step="0.1" value="-0.9">
+                            </div>
+                        </div>
+
+                        <!-- Pair 3 & Bias -->
+                        <div class="space-y-2 bg-obsidian/60 p-3.5 rounded-xl border border-white/5">
+                            <div class="flex justify-between text-xs font-mono">
+                                <span class="text-tealGlow">Axon Input $x_3$: <strong id="val-x3">0.50</strong></span>
+                                <span class="text-cyanGlow">Weight $w_3$: <strong id="val-w3">0.60</strong></span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <input type="range" id="in-x3" min="-2" max="2" step="0.1" value="0.5">
+                                <input type="range" id="in-w3" min="-2" max="2" step="0.1" value="0.6">
+                            </div>
+                        </div>
+
+                        <!-- Bias & Activation Selector -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                            <div class="bg-obsidian/60 p-3.5 rounded-xl border border-white/5">
+                                <div class="flex justify-between text-xs font-mono mb-2">
+                                    <span class="text-purple-400">Bias ($b$):</span>
+                                    <strong id="val-b" class="text-white">0.10</strong>
+                                </div>
+                                <input type="range" id="in-b" min="-2" max="2" step="0.1" value="0.1" class="w-full">
+                            </div>
+
+                            <div class="bg-obsidian/60 p-3.5 rounded-xl border border-white/5">
+                                <label class="block text-xs font-mono text-slate-400 mb-1.5">Activation $\sigma(z)$</label>
+                                <select id="activation-fn" class="w-full bg-slateDark text-white font-mono text-xs rounded-lg px-2.5 py-2 border border-white/10 focus:outline-none focus:border-tealGlow">
+                                    <option value="relu">ReLU: max(0, z)</option>
+                                    <option value="gelu">GELU: x·Φ(x) (Transformer)</option>
+                                    <option value="sigmoid">Sigmoid: 1 / (1 + e^-z)</option>
+                                    <option value="tanh">Tanh: tanh(z)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Visual Network Diagram & Telemetry -->
+                    <div class="lg:col-span-7 flex flex-col justify-between bg-obsidian/80 rounded-2xl p-6 border border-white/10">
+                        <!-- SVG Interactive Neural Graph -->
+                        <div class="w-full overflow-x-auto">
+                            <svg class="w-full h-64 min-w-[420px]" viewBox="0 0 540 230" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Synaptic Lines -->
+                                <line id="line-1" x1="80" y1="45" x2="270" y2="115" stroke="#00f5d4" stroke-width="3" stroke-opacity="0.7"/>
+                                <line id="line-2" x1="80" y1="115" x2="270" y2="115" stroke="#00f2fe" stroke-width="2.5" stroke-opacity="0.7"/>
+                                <line id="line-3" x1="80" y1="185" x2="270" y2="115" stroke="#4facfe" stroke-width="2" stroke-opacity="0.7"/>
+                                <line x1="270" y1="115" x2="450" y2="115" stroke="#00f5d4" stroke-width="4"/>
+
+                                <!-- Input Nodes (Axons) -->
+                                <g>
+                                    <circle cx="80" cy="45" r="24" fill="#0d1322" stroke="#00f5d4" stroke-width="2"/>
+                                    <text x="80" y="42" text-anchor="middle" fill="#94a3b8" font-family="JetBrains Mono" font-size="10">x₁</text>
+                                    <text id="svg-x1" x="80" y="56" text-anchor="middle" fill="#ffffff" font-family="JetBrains Mono" font-size="11" font-weight="bold">0.8</text>
+                                </g>
+                                <g>
+                                    <circle cx="80" cy="115" r="24" fill="#0d1322" stroke="#00f2fe" stroke-width="2"/>
+                                    <text x="80" y="112" text-anchor="middle" fill="#94a3b8" font-family="JetBrains Mono" font-size="10">x₂</text>
+                                    <text id="svg-x2" x="80" y="126" text-anchor="middle" fill="#ffffff" font-family="JetBrains Mono" font-size="11" font-weight="bold">-0.4</text>
+                                </g>
+                                <g>
+                                    <circle cx="80" cy="185" r="24" fill="#0d1322" stroke="#4facfe" stroke-width="2"/>
+                                    <text x="80" y="182" text-anchor="middle" fill="#94a3b8" font-family="JetBrains Mono" font-size="10">x₃</text>
+                                    <text id="svg-x3" x="80" y="196" text-anchor="middle" fill="#ffffff" font-family="JetBrains Mono" font-size="11" font-weight="bold">0.5</text>
+                                </g>
+
+                                <!-- Weight Labels -->
+                                <rect x="145" y="60" width="54" height="20" rx="4" fill="#080c14" stroke="#1e293b"/>
+                                <text id="svg-w1" x="172" y="74" text-anchor="middle" fill="#00f5d4" font-family="JetBrains Mono" font-size="10">w₁: 1.2</text>
+
+                                <rect x="145" y="105" width="54" height="20" rx="4" fill="#080c14" stroke="#1e293b"/>
+                                <text id="svg-w2" x="172" y="119" text-anchor="middle" fill="#00f2fe" font-family="JetBrains Mono" font-size="10">w₂: -0.9</text>
+
+                                <rect x="145" y="150" width="54" height="20" rx="4" fill="#080c14" stroke="#1e293b"/>
+                                <text id="svg-w3" x="172" y="164" text-anchor="middle" fill="#4facfe" font-family="JetBrains Mono" font-size="10">w₃: 0.6</text>
+
+                                <!-- Central Perceptron Summation Node -->
+                                <g>
+                                    <circle id="perceptron-circle" cx="270" cy="115" r="38" fill="#0d1322" stroke="#00f2fe" stroke-width="3"/>
+                                    <text x="270" y="105" text-anchor="middle" fill="#94a3b8" font-family="JetBrains Mono" font-size="11">Σ(x·w)+b</text>
+                                    <text id="svg-z" x="270" y="125" text-anchor="middle" fill="#00f2fe" font-family="JetBrains Mono" font-size="13" font-weight="bold">z = 1.72</text>
+                                </g>
+
+                                <!-- Output Activated Node -->
+                                <g>
+                                    <circle id="output-circle" cx="450" cy="115" r="40" fill="#0d1322" stroke="#00f5d4" stroke-width="3"/>
+                                    <text x="450" y="104" text-anchor="middle" fill="#00f5d4" font-family="JetBrains Mono" font-size="10">OUTPUT ŷ</text>
+                                    <text id="svg-out" x="450" y="126" text-anchor="middle" fill="#ffffff" font-family="JetBrains Mono" font-size="16" font-weight="bold">1.720</text>
+                                </g>
+                            </svg>
+                        </div>
+
+                        <!-- Live Math Equation Bar -->
+                        <div class="mt-4 pt-4 border-t border-white/10 grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono text-xs">
+                            <div class="bg-slateDark/90 p-3 rounded-xl border border-white/5">
+                                <span class="text-slate-400 block">Dot Product ($x \cdot w$)</span>
+                                <span id="math-dot" class="text-sm font-bold text-white mt-1 block">1.620</span>
+                            </div>
+                            <div class="bg-slateDark/90 p-3 rounded-xl border border-white/5">
+                                <span class="text-slate-400 block">Pre-Activation ($z$)</span>
+                                <span id="math-z" class="text-sm font-bold text-cyanGlow mt-1 block">1.720</span>
+                            </div>
+                            <div class="bg-slateDark/90 p-3 rounded-xl border border-tealGlow/30">
+                                <span class="text-slate-400 block">Activated Output ($\hat{y}$)</span>
+                                <span id="math-y" class="text-sm font-bold text-tealGlow mt-1 block">1.720 (ACTIVE)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. INTERACTIVE LAB 02: TRANSFORMER MULTI-HEAD SELF-ATTENTION VISUALIZER -->
+    <section id="transformer" class="py-20 border-t border-white/10 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Section Header -->
+            <div class="text-center max-w-3xl mx-auto mb-12">
+                <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyanGlow/10 border border-cyanGlow/30 font-mono text-xs text-cyanGlow mb-3">
+                    <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                    <span>Interactive Lab 02 • Attention(Q, K, V) = softmax(QKᵀ / √d_k · τ)V</span>
+                </div>
+                <h2 class="text-3xl sm:text-4xl font-bold text-white">Transformer Multi-Head Self-Attention Visualizer</h2>
+                <p class="text-slate-400 mt-2 text-sm sm:text-base">
+                    Explore how modern LLMs route information across tokens. Select a technical prompt or type your own, switch between specialized attention heads, adjust softmax temperature ($\tau$), or toggle causal masking.
+                </p>
+            </div>
+
+            <!-- Main Transformer Lab Glass Container -->
+            <div class="glass-card rounded-3xl p-6 sm:p-8 lg:p-10 border border-tealGlow/30 shadow-neon-teal space-y-8">
+                
+                <!-- Top Control Bar: Presets, Custom Input, Head Selector, Temperature & Causal Mask -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-obsidian/70 p-5 rounded-2xl border border-white/10">
+                    
+                    <!-- Left 7 Cols: Sentence Preset & Custom Prompt Input -->
+                    <div class="lg:col-span-7 space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block font-mono text-[11px] uppercase tracking-wider text-slate-400 mb-1.5">Preset Technical Sequence</label>
+                                <select id="attn-preset-select" class="w-full bg-slateDark text-white font-mono text-xs rounded-xl px-3.5 py-2.5 border border-white/15 focus:outline-none focus:border-tealGlow">
+                                    <option value="0">The axon transmits signals to the perceptron tensor</option>
+                                    <option value="1">Autonomous agents query vector databases for context</option>
+                                    <option value="2">Backpropagation minimizes loss across neural weights</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block font-mono text-[11px] uppercase tracking-wider text-slate-400 mb-1.5">Or Custom Prompt (Max 8 Tokens)</label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="attn-custom-input" placeholder="e.g. Tensors power deep learning models" 
+                                           class="w-full bg-slateDark text-white font-mono text-xs rounded-xl px-3.5 py-2 border border-white/15 focus:outline-none focus:border-cyanGlow"/>
+                                    <button id="attn-apply-btn" class="px-3.5 py-2 rounded-xl bg-tealGlow text-obsidian font-mono text-xs font-bold hover:opacity-90 shrink-0 transition-opacity">
+                                        Tokenize
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Specialized Attention Head Selector -->
+                        <div>
+                            <label class="block font-mono text-[11px] uppercase tracking-wider text-slate-400 mb-2">Select Specialized Attention Head</label>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="head-selector-group">
+                                <button data-head="0" class="attn-head-btn px-3 py-2 rounded-xl font-mono text-xs font-semibold bg-gradient-to-r from-tealGlow to-cyanGlow text-obsidian shadow-neon-teal transition-all text-left">
+                                    <span class="block text-[10px] opacity-80">HEAD 01</span>
+                                    Syntactic & Local
+                                </button>
+                                <button data-head="1" class="attn-head-btn px-3 py-2 rounded-xl font-mono text-xs font-semibold bg-slateDark text-slate-300 border border-white/10 hover:border-tealGlow/40 transition-all text-left">
+                                    <span class="block text-[10px] text-tealGlow">HEAD 02</span>
+                                    Semantic Entity
+                                </button>
+                                <button data-head="2" class="attn-head-btn px-3 py-2 rounded-xl font-mono text-xs font-semibold bg-slateDark text-slate-300 border border-white/10 hover:border-tealGlow/40 transition-all text-left">
+                                    <span class="block text-[10px] text-cyanGlow">HEAD 03</span>
+                                    Action-Object
+                                </button>
+                                <button data-head="3" class="attn-head-btn px-3 py-2 rounded-xl font-mono text-xs font-semibold bg-slateDark text-slate-300 border border-white/10 hover:border-tealGlow/40 transition-all text-left">
+                                    <span class="block text-[10px] text-blueGlow">HEAD 04</span>
+                                    Global Average
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right 5 Cols: Softmax Temperature & Causal Mask Toggle -->
+                    <div class="lg:col-span-5 flex flex-col justify-between bg-slateDark/80 p-4 rounded-xl border border-white/10 space-y-4">
+                        <div>
+                            <div class="flex items-center justify-between text-xs font-mono mb-2">
+                                <span class="text-slate-300 flex items-center gap-1.5">
+                                    <i data-lucide="thermometer" class="w-3.5 h-3.5 text-tealGlow"></i>
+                                    Softmax Temperature ($\tau$):
+                                </span>
+                                <span id="attn-temp-val" class="text-tealGlow font-bold px-2 py-0.5 rounded bg-tealGlow/10">0.80 (Sharp)</span>
+                            </div>
+                            <input type="range" id="attn-temp-slider" min="0.2" max="2.5" step="0.1" value="0.8" class="w-full">
+                            <div class="flex justify-between text-[10px] font-mono text-slate-500 mt-1">
+                                <span>0.2 (Argmax Peak)</span>
+                                <span>1.0 (Standard)</span>
+                                <span>2.5 (Uniform)</span>
+                            </div>
+                        </div>
+
+                        <!-- Causal Mask Switch -->
+                        <div class="pt-3 border-t border-white/10 flex items-center justify-between">
+                            <div>
+                                <span class="text-xs font-mono font-semibold text-white block">Causal Mask (Decoder-Only)</span>
+                                <span class="text-[11px] font-mono text-slate-400">Block future tokens ($j > i \rightarrow -\infty$)</span>
+                            </div>
+                            <button id="attn-causal-toggle" role="switch" aria-checked="false" 
+                                    class="px-3.5 py-1.5 rounded-xl font-mono text-xs font-semibold border border-white/15 bg-obsidian text-slate-400 hover:border-cyanGlow/50 transition-all">
+                                OFF (Bidirectional)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Middle Visual Grid: Left Bipartite Arc Diagram | Right N x N Heatmap Matrix -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+                    
+                    <!-- Left 6 Cols: Bipartite Attention Arc Diagram (SVG) -->
+                    <div class="lg:col-span-6 bg-obsidian/80 rounded-2xl p-5 border border-white/10 flex flex-col justify-between">
+                        <div class="flex items-center justify-between mb-3">
+                            <div>
+                                <h3 class="text-sm font-bold text-white font-mono flex items-center gap-2">
+                                    <i data-lucide="git-Commit" class="w-4 h-4 text-tealGlow"></i>
+                                    Bipartite Attention Routing (Q → K)
+                                </h3>
+                                <p class="text-[11px] text-slate-400 font-mono">Click or hover any source token on the left to inspect its attention distribution</p>
+                            </div>
+                            <span id="active-token-pill" class="px-2.5 py-1 rounded-md bg-tealGlow/15 text-tealGlow font-mono text-xs font-bold border border-tealGlow/30">
+                                Query: [axon]
+                            </span>
+                        </div>
+
+                        <!-- Dynamic SVG Bipartite Graph -->
+                        <div class="w-full overflow-x-auto flex justify-center">
+                            <svg id="attn-bipartite-svg" class="w-full max-w-[500px] h-[360px]" viewBox="0 0 480 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Populated via JS -->
+                            </svg>
+                        </div>
+
+                        <div class="flex items-center justify-between text-[11px] font-mono text-slate-400 pt-3 border-t border-white/10">
+                            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-tealGlow inline-block"></span> Source Query ($Q_i$)</span>
+                            <span id="head-behavior-desc" class="text-cyanGlow">Head 01: Focuses on adjacent syntactic modifiers</span>
+                            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-cyanGlow inline-block"></span> Target Key ($K_j$)</span>
+                        </div>
+                    </div>
+
+                    <!-- Right 6 Cols: Interactive N x N Attention Heatmap Matrix -->
+                    <div class="lg:col-span-6 bg-obsidian/80 rounded-2xl p-5 border border-white/10 flex flex-col justify-between">
+                        <div class="flex items-center justify-between mb-3">
+                            <div>
+                                <h3 class="text-sm font-bold text-white font-mono flex items-center gap-2">
+                                    <i data-lucide="grid" class="w-4 h-4 text-cyanGlow"></i>
+                                    $N \times N$ Attention Probability Matrix
+                                </h3>
+                                <p class="text-[11px] text-slate-400 font-mono">Rows = Query ($Q_i$) • Columns = Key ($K_j$) • Row sum = 1.00</p>
+                            </div>
+                            <span class="text-[11px] font-mono text-slate-400">$d_k = 64 \cdot \sqrt{d_k} = 8$</span>
+                        </div>
+
+                        <!-- Matrix Table Container -->
+                        <div class="overflow-x-auto my-auto py-2">
+                            <div id="attn-heatmap-container" class="inline-block min-w-full align-middle">
+                                <!-- Populated via JS -->
+                            </div>
+                        </div>
+
+                        <!-- Matrix Color Legend -->
+                        <div class="flex items-center justify-between text-[11px] font-mono text-slate-400 pt-3 border-t border-white/10">
+                            <span>Weight Scale: 0.00 → 1.00</span>
+                            <div class="flex items-center gap-2">
+                                <span>Low</span>
+                                <div class="w-28 h-2.5 rounded-full bg-gradient-to-r from-slate-900 via-cyanGlow/50 to-tealGlow"></div>
+                                <span class="text-tealGlow font-bold">High</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Bottom Live Q / K / V Vector & Math Inspector -->
+                <div class="bg-obsidian/90 rounded-2xl p-5 border border-cyanGlow/25">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-4 border-b border-white/10">
+                        <div class="flex items-center gap-2.5">
+                            <i data-lucide="Binary" class="w-5 h-5 text-tealGlow"></i>
+                            <h4 class="font-mono text-xs sm:text-sm font-bold text-white uppercase tracking-wider">
+                                Live Tensor Projection Inspector — Token: <span id="inspector-token-name" class="text-tealGlow">"axon"</span>
+                            </h4>
+                        </div>
+                        <span id="inspector-top-match" class="font-mono text-xs text-cyanGlow">
+                            Top Attended Key: "transmits" (Weight: 0.42)
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 font-mono text-xs">
+                        <div class="bg-slateDark/90 p-3.5 rounded-xl border border-tealGlow/20">
+                            <span class="text-slate-400 text-[11px] block">Query Vector $Q_i = x_i W_Q$</span>
+                            <span id="vec-q" class="text-tealGlow font-bold text-xs sm:text-sm mt-1.5 block">[ 0.84, -0.31, 0.62, 0.19 ]</span>
+                        </div>
+                        <div class="bg-slateDark/90 p-3.5 rounded-xl border border-cyanGlow/20">
+                            <span class="text-slate-400 text-[11px] block">Top Key Vector $K_{j^*} = x_{j^*} W_K$</span>
+                            <span id="vec-k" class="text-cyanGlow font-bold text-xs sm:text-sm mt-1.5 block">[ 0.79, -0.28, 0.55, 0.24 ]</span>
+                        </div>
+                        <div class="bg-slateDark/90 p-3.5 rounded-xl border border-blueGlow/20">
+                            <span class="text-slate-400 text-[11px] block">Value Vector $V_i = x_i W_V$</span>
+                            <span id="vec-v" class="text-blueGlow font-bold text-xs sm:text-sm mt-1.5 block">[ -0.15, 0.91, 0.44, -0.52 ]</span>
+                        </div>
+                        <div class="bg-slateDark/90 p-3.5 rounded-xl border border-purple-400/30">
+                            <span class="text-slate-400 text-[11px] block">Context Output $Z_i = \sum \alpha_{ij} V_j$</span>
+                            <span id="vec-z" class="text-purple-300 font-bold text-xs sm:text-sm mt-1.5 block">[ 0.38, 0.64, 0.51, -0.18 ]</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. THE WORKBENCH (FILTERABLE PROJECT SHOWCASE) -->
+    <section id="workbench" class="py-20 border-t border-white/10 bg-slateDark/30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
+                <div>
+                    <span class="font-mono text-xs uppercase tracking-widest text-tealGlow">Lab Repository & Architecture Logs</span>
+                    <h2 class="text-3xl sm:text-4xl font-bold text-white mt-2">The Workbench</h2>
+                </div>
+
+                <!-- Category Filter Buttons -->
+                <div class="flex flex-wrap gap-2" id="filter-container">
+                    <button data-filter="all" class="filter-btn active px-4 py-2 rounded-xl font-mono text-xs font-semibold bg-tealGlow text-obsidian transition-all">
+                        All (6)
+                    </button>
+                    <button data-filter="agentic-ai" class="filter-btn px-4 py-2 rounded-xl font-mono text-xs font-semibold glass-card text-slate-300 hover:text-white transition-all">
+                        Agentic AI
+                    </button>
+                    <button data-filter="computer-vision" class="filter-btn px-4 py-2 rounded-xl font-mono text-xs font-semibold glass-card text-slate-300 hover:text-white transition-all">
+                        Computer Vision
+                    </button>
+                    <button data-filter="data-systems" class="filter-btn px-4 py-2 rounded-xl font-mono text-xs font-semibold glass-card text-slate-300 hover:text-white transition-all">
+                        Data Systems
+                    </button>
+                    <button data-filter="edge-iot" class="filter-btn px-4 py-2 rounded-xl font-mono text-xs font-semibold glass-card text-slate-300 hover:text-white transition-all">
+                        Edge IoT
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dynamic Project Cards Container -->
+            <div id="projects-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Populated via JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- 7. THE AI SIGNAL & PINNED LAUNCH POST -->
+    <section id="signal" class="py-20 border-t border-white/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+                
+                <!-- Left: Weekly Publishing Engine -->
+                <div class="lg:col-span-6 space-y-6">
+                    <span class="font-mono text-xs uppercase tracking-widest text-cyanGlow">Publishing Protocol</span>
+                    <h2 class="text-3xl font-bold text-white">The 3x Weekly Dispatch</h2>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Consistent, high-signal technical notes published every week on LinkedIn. Zero fluff, structured for software engineers, data scientists, and AI builders.
+                    </p>
+
+                    <div class="space-y-4 pt-2">
+                        <div class="glass-card p-5 rounded-2xl flex items-start gap-4">
+                            <div class="px-3 py-1.5 rounded-lg bg-cyanGlow/10 border border-cyanGlow/30 font-mono text-xs font-bold text-cyanGlow shrink-0">
+                                TUE
+                            </div>
+                            <div>
+                                <h4 class="text-white font-semibold text-base">The AI Signal (News & Benchmarks)</h4>
+                                <p class="text-slate-400 text-xs mt-1 leading-relaxed">
+                                    Pragmatic analysis of new model weights, reasoning architectures, context window economics, and developer tooling.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="glass-card p-5 rounded-2xl flex items-start gap-4 border-tealGlow/30">
+                            <div class="px-3 py-1.5 rounded-lg bg-tealGlow/10 border border-tealGlow/30 font-mono text-xs font-bold text-tealGlow shrink-0">
+                                THU
+                            </div>
+                            <div>
+                                <h4 class="text-white font-semibold text-base">The Workbench (System Builds)</h4>
+                                <p class="text-slate-400 text-xs mt-1 leading-relaxed">
+                                    Behind-the-scenes architecture logs from real builds: Google ADK agents, local MediaPipe vision pipelines, and FastAPI backends.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="glass-card p-5 rounded-2xl flex items-start gap-4">
+                            <div class="px-3 py-1.5 rounded-lg bg-blueGlow/10 border border-blueGlow/30 font-mono text-xs font-bold text-blueGlow shrink-0">
+                                SAT
+                            </div>
+                            <div>
+                                <h4 class="text-white font-semibold text-base">The Fundamentals (Math & Data Science)</h4>
+                                <p class="text-slate-400 text-xs mt-1 leading-relaxed">
+                                    Code-first study notes breaking down backpropagation, vector indexing (HNSW/IVF), loss functions, and attention matrices.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Pinned LinkedIn Launch Post Card -->
+                <div class="lg:col-span-6">
+                    <div class="glass-card rounded-2xl p-6 sm:p-8 border border-white/15 relative">
+                        <div class="flex items-center justify-between mb-6 pb-4 border-b border-white/10">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-slateDark border border-tealGlow/40 flex items-center justify-center font-bold text-gradient">
+                                    AP
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                                        AP Tensor Lab
+                                        <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-tealGlow/15 text-tealGlow">PINNED POST</span>
+                                    </h4>
+                                    <p class="text-xs text-slate-400">Applied AI engineering, data science notes & neural builds</p>
+                                </div>
+                            </div>
+                            <i data-lucide="linkedin" class="w-5 h-5 text-cyanGlow"></i>
+                        </div>
+
+                        <div class="space-y-3 text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
+                            <p class="text-white font-semibold">Hello World. Welcome to AP Tensor Lab. 🚀</p>
+                            <p>
+                                AP Tensor Lab is officially live—an independent engineering lab and open notebook dedicated to modern Artificial Intelligence, Machine Learning, and Data Science.
+                            </p>
+                            <p>
+                                <strong class="text-tealGlow">The name carries a dual meaning:</strong><br>
+                                At its core, it connects the biological and computational roots of intelligence—the <strong>Axon</strong> (the biological conductor of information) and the <strong>Perceptron</strong> (the foundational unit of artificial neural networks)—bridged by <strong>Tensors</strong>.
+                            </p>
+                            <p class="font-mono text-xs text-cyanGlow pt-2">
+                                #ArtificialIntelligence #DataScience #MachineLearning #DeepLearning #Python #AIAGENTS
+                            </p>
+                        </div>
+
+                        <div class="mt-6 pt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
+                            <button id="copy-post-btn" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-mono text-slate-200 transition-colors">
+                                <i data-lucide="copy" class="w-3.5 h-3.5 text-tealGlow"></i>
+                                <span>Copy Launch Post Text</span>
+                            </button>
+                            <a href="https://www.linkedin.com/company/ap-tensor-lab" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-xs font-semibold text-tealGlow hover:underline">
+                                <span>View Page on LinkedIn</span>
+                                <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!--ARCHITECTURE MODAL FOR WORKBENCH CARDS -->
+    <div id="project-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-obsidian/80 backdrop-blur-md">
+        <div class="glass-card rounded-2xl max-w-2xl w-full p-6 sm:p-8 border border-cyanGlow/40 shadow-2xl relative animate-fadeIn">
+            <button id="close-modal-btn" class="absolute top-5 right-5 p-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div id="modal-badge" class="inline-block font-mono text-xs px-3 py-1 rounded-full bg-tealGlow/10 text-tealGlow border border-tealGlow/30 mb-3">
+                Applied AI
+            </div>
+            <h3 id="modal-title" class="text-2xl font-bold text-white mb-2">Project Title</h3>
+            <p id="modal-desc" class="text-slate-300 text-sm leading-relaxed mb-6">Project description goes here.</p>
+            
+            <div class="bg-obsidian/90 rounded-xl p-4 border border-white/10 mb-6">
+                <h4 class="font-mono text-xs uppercase text-cyanGlow mb-2">Architecture & Key Takeaways</h4>
+                <ul id="modal-takeaways" class="space-y-2 text-xs font-mono text-slate-300">
+                    <!-- Populated dynamically -->
+                </ul>
+            </div>
+
+            <div class="flex items-center justify-between pt-2">
+                <div id="modal-tags" class="flex flex-wrap gap-2"></div>
+                <button id="modal-close-action" class="px-5 py-2 rounded-xl text-xs font-semibold bg-gradient-to-r from-tealGlow to-cyanGlow text-obsidian">
+                    Done Reading
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 8. FOOTER -->
+    <footer class="border-t border-white/10 bg-obsidian py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-slateDark border border-cyanGlow/40 flex items-center justify-center font-extrabold text-xs text-gradient">
+                    AP
+                </div>
+                <div>
+                    <span class="font-bold text-sm text-white tracking-wider">AP TENSOR LAB</span>
+                    <p class="text-xs text-slate-500 font-mono">Axon → Perceptron • Independent AI & Data Hub</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-6 text-xs font-mono text-slate-400">
+                <a href="#about" class="hover:text-tealGlow transition-colors">About</a>
+                <a href="#simulator" class="hover:text-tealGlow transition-colors">Perceptron</a>
+                <a href="#transformer" class="hover:text-tealGlow transition-colors">Transformer</a>
+                <a href="#workbench" class="hover:text-tealGlow transition-colors">Workbench</a>
+                <a href="#signal" class="hover:text-tealGlow transition-colors">Signal</a>
+                <a href="https://www.linkedin.com/company/ap-tensor-lab" target="_blank" rel="noopener noreferrer" class="text-tealGlow hover:underline flex items-center gap-1">
+                    LinkedIn <i data-lucide="external-link" class="w-3 h-3"></i>
+                </a>
+            </div>
+
+            <p class="text-xs text-slate-500 font-mono">
+                © 2026 AP Tensor Lab • Founded by AP • Built in Public
+            </p>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Toast Helper Function (No alert() used)
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-message');
+            toastMsg.textContent = message;
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-24', 'opacity-0');
+            }, 2800);
+        }
+
+        // Clipboard Copy Helper using execCommand fallback for iframe compatibility
+        function copyTextToClipboard(text, successMsg) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                showToast(successMsg);
+            } catch (err) {
+                showToast('Failed to copy text.');
+            }
+            document.body.removeChild(textarea);
+        }
+
+        // Copy Python Snippet Button
+        document.getElementById('copy-code-btn').addEventListener('click', () => {
+            const code = document.getElementById('code-snippet').innerText;
+            copyTextToClipboard(code, 'PyTorch AxonPerceptron snippet copied!');
+        });
+
+        // Copy Launch Post Button
+        document.getElementById('copy-post-btn').addEventListener('click', () => {
+            const postText = `Hello World. Welcome to AP Tensor Lab. 🚀\n\nAP Tensor Lab is officially live—an independent engineering lab and open notebook dedicated to modern Artificial Intelligence, Machine Learning, and Data Science.\n\nThe name carries a dual meaning:\nAt its core, it connects the biological and computational roots of intelligence—the Axon (the biological conductor of information) and the Perceptron (the foundational unit of artificial neural networks)—bridged by Tensors.\n\n#ArtificialIntelligence #DataScience #MachineLearning #DeepLearning #Python`;
+            copyTextToClipboard(postText, 'LinkedIn Launch Post copied to clipboard!');
+        });
+
+        // Mobile Navigation Drawer Toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        document.querySelectorAll('.mobile-link').forEach(link => {
+            link.addEventListener('click', () => mobileMenu.classList.add('hidden'));
+        });
+
+        // ==========================================
+        // INTERACTIVE PERCEPTRON SIMULATOR LOGIC
+        // ==========================================
+        const simInputs = ['in-x1', 'in-w1', 'in-x2', 'in-w2', 'in-x3', 'in-w3', 'in-b', 'activation-fn'];
+        
+        function updatePerceptronSim() {
+            const x1 = parseFloat(document.getElementById('in-x1').value);
+            const w1 = parseFloat(document.getElementById('in-w1').value);
+            const x2 = parseFloat(document.getElementById('in-x2').value);
+            const w2 = parseFloat(document.getElementById('in-w2').value);
+            const x3 = parseFloat(document.getElementById('in-x3').value);
+            const w3 = parseFloat(document.getElementById('in-w3').value);
+            const b = parseFloat(document.getElementById('in-b').value);
+            const fn = document.getElementById('activation-fn').value;
+
+            // Update labels
+            document.getElementById('val-x1').textContent = x1.toFixed(2);
+            document.getElementById('val-w1').textContent = w1.toFixed(2);
+            document.getElementById('val-x2').textContent = x2.toFixed(2);
+            document.getElementById('val-w2').textContent = w2.toFixed(2);
+            document.getElementById('val-x3').textContent = x3.toFixed(2);
+            document.getElementById('val-w3').textContent = w3.toFixed(2);
+            document.getElementById('val-b').textContent = b.toFixed(2);
+
+            // Compute dot product & pre-activation z
+            const dot = (x1 * w1) + (x2 * w2) + (x3 * w3);
+            const z = dot + b;
+
+            // Compute activation output
+            let y = 0;
+            if (fn === 'relu') {
+                y = Math.max(0, z);
+            } else if (fn === 'gelu') {
+                // Fast tanh approximation of GELU
+                y = 0.5 * z * (1 + Math.tanh(Math.sqrt(2 / Math.PI) * (z + 0.044715 * Math.pow(z, 3))));
+            } else if (fn === 'sigmoid') {
+                y = 1 / (1 + Math.exp(-z));
+            } else if (fn === 'tanh') {
+                y = Math.tanh(z);
+            }
+
+            // Update SVG Diagram Texts
+            document.getElementById('svg-x1').textContent = x1.toFixed(1);
+            document.getElementById('svg-x2').textContent = x2.toFixed(1);
+            document.getElementById('svg-x3').textContent = x3.toFixed(1);
+            document.getElementById('svg-w1').textContent = `w₁: ${w1.toFixed(1)}`;
+            document.getElementById('svg-w2').textContent = `w₂: ${w2.toFixed(1)}`;
+            document.getElementById('svg-w3').textContent = `w₃: ${w3.toFixed(1)}`;
+            document.getElementById('svg-z').textContent = `z = ${z.toFixed(2)}`;
+            document.getElementById('svg-out').textContent = y.toFixed(3);
+
+            // Dynamic line thickness based on signal magnitude
+            document.getElementById('line-1').setAttribute('stroke-width', Math.max(1, Math.abs(x1 * w1) * 2.2));
+            document.getElementById('line-2').setAttribute('stroke-width', Math.max(1, Math.abs(x2 * w2) * 2.2));
+            document.getElementById('line-3').setAttribute('stroke-width', Math.max(1, Math.abs(x3 * w3) * 2.2));
+
+            // Update Bottom Telemetry Cards
+            document.getElementById('math-dot').textContent = dot.toFixed(3);
+            document.getElementById('math-z').textContent = z.toFixed(3);
+            const isFired = y > 0.05;
+            document.getElementById('math-y').textContent = `${y.toFixed(3)} ${isFired ? '(FIRING)' : '(DORMANT)'}`;
+            
+            const outCircle = document.getElementById('output-circle');
+            outCircle.setAttribute('stroke', isFired ? '#00f5d4' : '#475569');
+        }
+
+        simInputs.forEach(id => {
+            document.getElementById(id).addEventListener('input', updatePerceptronSim);
+        });
+
+        document.getElementById('reset-sim-btn').addEventListener('click', () => {
+            document.getElementById('in-x1').value = 0.8;
+            document.getElementById('in-w1').value = 1.2;
+            document.getElementById('in-x2').value = -0.4;
+            document.getElementById('in-w2').value = -0.9;
+            document.getElementById('in-x3').value = 0.5;
+            document.getElementById('in-w3').value = 0.6;
+            document.getElementById('in-b').value = 0.1;
+            document.getElementById('activation-fn').value = 'relu';
+            updatePerceptronSim();
+            showToast('Perceptron parameters reset to defaults');
+        });
+
+        // ============================================================
+        // INTERACTIVE LAB 02: TRANSFORMER SELF-ATTENTION VISUALIZER
+        // ============================================================
+        const presetSentences = [
+            "The axon transmits signals to the perceptron tensor",
+            "Autonomous agents query vector databases for context",
+            "Backpropagation minimizes loss across neural weights"
+        ];
+
+        const headDescriptions = [
+            "Head 01 (Syntactic & Local): Attends strongly to adjacent modifiers and local grammatical phrases.",
+            "Head 02 (Semantic Entity): Links domain nouns and technical entities across the sequence.",
+            "Head 03 (Action-Object): Connects verbs and operators directly to their target arguments.",
+            "Head 04 (Global Multi-Head Avg): Ensemble representation blending all specialized subspaces."
+        ];
+
+        let attnState = {
+            tokens: presetSentences[0].split(' '),
+            selectedTokenIdx: 1, // default "axon"
+            headIdx: 0,
+            temperature: 0.8,
+            causalMask: false,
+            probsMatrix: []
+        };
+
+        // Deterministic pseudo-embedding generator for any token string + head
+        function getTokenVectors(token, index, head) {
+            let hash = 0;
+            const clean = token.toLowerCase();
+            for (let i = 0; i < clean.length; i++) {
+                hash = ((hash << 5) - hash) + clean.charCodeAt(i);
+                hash |= 0;
+            }
+            const seed = Math.abs(hash) + (head * 37) + 11;
+            const q = [
+                Math.sin(seed * 0.7 + index * 0.3),
+                Math.cos(seed * 1.3 - index * 0.2),
+                Math.sin(seed * 2.1 + head * 0.9),
+                Math.cos(seed * 0.5 + index * 0.5)
+            ];
+            const k = [
+                Math.sin(seed * 0.75 + index * 0.25),
+                Math.cos(seed * 1.25 - index * 0.15),
+                Math.sin(seed * 1.9 + head * 0.8),
+                Math.cos(seed * 0.55 + index * 0.45)
+            ];
+            const v = [
+                Math.cos(seed * 0.9),
+                Math.sin(seed * 1.6),
+                Math.cos(seed * 2.3),
+                Math.sin(seed * 0.4)
+            ];
+            return { q, k, v };
+        }
+
+        // Compute raw unnormalized attention score between token i and token j for a specific head
+        function computePairwiseRawScore(tokens, i, j, head) {
+            const tokI = tokens[i].toLowerCase();
+            const tokJ = tokens[j].toLowerCase();
+            const dist = Math.abs(i - j);
+
+            const vecI = getTokenVectors(tokI, i, head);
+            const vecJ = getTokenVectors(tokJ, j, head);
+            const baseDot = (vecI.q[0]*vecJ.k[0] + vecI.q[1]*vecJ.k[1] + vecI.q[2]*vecJ.k[2] + vecI.q[3]*vecJ.k[3]) * 0.6;
+
+            if (head === 0) {
+                // Head 1: Syntactic & Local Context
+                const localBoost = dist === 1 ? 1.85 : (dist === 0 ? 1.15 : Math.exp(-dist * 0.65));
+                return baseDot + localBoost;
+            } else if (head === 1) {
+                // Head 2: Semantic Entity Linking
+                const isTechI = tokI.length >= 4;
+                const isTechJ = tokJ.length >= 4;
+                let semBoost = (isTechI && isTechJ) ? 1.55 : 0.2;
+                if (i === j) semBoost += 0.65;
+                return baseDot + semBoost;
+            } else if (head === 2) {
+                // Head 3: Action-Object Dependency
+                const verbs = ['transmits', 'query', 'minimizes', 'power', 'routes', 'computes', 'builds'];
+                const isVerbI = verbs.includes(tokI) || tokI.endsWith('s');
+                const isNounJ = tokJ.length >= 5 && !verbs.includes(tokJ);
+                let actBoost = (isVerbI && isNounJ) ? 1.9 : ((isNounJ && verbs.includes(tokJ)) ? 1.65 : 0.3);
+                if (j === i + 1) actBoost += 0.8;
+                return baseDot + actBoost;
+            } else {
+                // Head 4: Global Multi-Head Average
+                const s0 = computePairwiseRawScore(tokens, i, j, 0);
+                const s1 = computePairwiseRawScore(tokens, i, j, 1);
+                const s2 = computePairwiseRawScore(tokens, i, j, 2);
+                return (s0 + s1 + s2) / 3.0;
+            }
+        }
+
+        // Compute full N x N Softmax Attention Matrix
+        function computeAttentionMatrix() {
+            const { tokens, headIdx, temperature, causalMask } = attnState;
+            const N = tokens.length;
+            const matrix = [];
+
+            for (let i = 0; i < N; i++) {
+                const rowScores = [];
+                let maxScore = -Infinity;
+
+                for (let j = 0; j < N; j++) {
+                    if (causalMask && j > i) {
+                        rowScores.push(-Infinity);
+                    } else {
+                        const raw = computePairwiseRawScore(tokens, i, j, headIdx);
+                        const scaled = raw / Math.max(0.15, temperature);
+                        rowScores.push(scaled);
+                        if (scaled > maxScore) maxScore = scaled;
+                    }
+                }
+
+                // Softmax normalization
+                let sumExp = 0;
+                const expScores = rowScores.map(s => {
+                    if (s === -Infinity) return 0;
+                    const e = Math.exp(s - maxScore);
+                    sumExp += e;
+                    return e;
+                });
+
+                const probs = expScores.map(e => sumExp > 0 ? e / sumExp : 0);
+                matrix.push(probs);
+            }
+
+            attnState.probsMatrix = matrix;
+        }
+
+        // Render SVG Bipartite Attention Graph
+        function renderBipartiteSVG() {
+            const svg = document.getElementById('attn-bipartite-svg');
+            const { tokens, selectedTokenIdx, probsMatrix } = attnState;
+            const N = tokens.length;
+            const height = 360;
+            const topPad = 28;
+            const stepY = N > 1 ? (height - topPad * 2) / (N - 1) : 0;
+
+            let defs = `
+                <defs>
+                    <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#2dd4bf" />
+                        <stop offset="100%" stop-color="#38bdf8" />
+                    </linearGradient>
+                </defs>
+            `;
+
+            let backgroundArcs = '';
+            let activeArcs = '';
+            let leftNodes = '';
+            let rightNodes = '';
+
+            // Draw faint background arcs for non-selected tokens
+            for (let i = 0; i < N; i++) {
+                if (i === selectedTokenIdx) continue;
+                const y1 = topPad + i * stepY;
+                for (let j = 0; j < N; j++) {
+                    const weight = probsMatrix[i][j];
+                    if (weight < 0.12) continue;
+                    const y2 = topPad + j * stepY;
+                    backgroundArcs += `<path d="M 125 ${y1} C 240 ${y1}, 240 ${y2}, 355 ${y2}" stroke="#38bdf8" stroke-opacity="${weight * 0.15}" stroke-width="1" fill="none"/>`;
+                }
+            }
+
+            // Draw highlighted arcs from selected source token
+            const activeWeights = probsMatrix[selectedTokenIdx] || [];
+            const ySource = topPad + selectedTokenIdx * stepY;
+
+            for (let j = 0; j < N; j++) {
+                const w = activeWeights[j] || 0;
+                if (w <= 0.001) continue;
+                const yTarget = topPad + j * stepY;
+                const strokeW = Math.max(1.2, w * 11);
+                const opacity = Math.min(1, Math.max(0.18, w * 1.35));
+                activeArcs += `
+                    <path d="M 125 ${ySource} C 245 ${ySource}, 235 ${yTarget}, 355 ${yTarget}" 
+                          stroke="url(#arcGrad)" stroke-width="${strokeW.toFixed(2)}" stroke-opacity="${opacity.toFixed(2)}" stroke-linecap="round" fill="none"/>
+                `;
+            }
+
+            // Draw Left Query Nodes & Right Key Nodes
+            for (let idx = 0; idx < N; idx++) {
+                const y = topPad + idx * stepY;
+                const isSelected = idx === selectedTokenIdx;
+                const targetWeight = activeWeights[idx] || 0;
+
+                // Left Node (Query Q_i)
+                leftNodes += `
+                    <g class="cursor-pointer" data-q-idx="${idx}">
+                        <rect x="10" y="${y - 14}" width="115" height="28" rx="7" 
+                              fill="${isSelected ? 'rgba(45, 212, 191, 0.2)' : '#0d1322'}" 
+                              stroke="${isSelected ? '#2dd4bf' : 'rgba(255,255,255,0.15)'}" stroke-width="${isSelected ? '2' : '1'}"/>
+                        <text x="67" y="${y + 4}" text-anchor="middle" fill="${isSelected ? '#2dd4bf' : '#e2e8f0'}" 
+                              font-family="JetBrains Mono" font-size="11" font-weight="${isSelected ? '700' : '500'}">
+                            ${tokens[idx].slice(0, 11)}
+                        </text>
+                        <circle cx="125" cy="${y}" r="${isSelected ? '5' : '3.5'}" fill="${isSelected ? '#2dd4bf' : '#64748b'}"/>
+                    </g>
+                `;
+
+                // Right Node (Key K_j)
+                const highlightRight = targetWeight > 0.18;
+                rightNodes += `
+                    <g class="cursor-pointer" data-k-idx="${idx}">
+                        <circle cx="355" cy="${y}" r="${Math.max(3.5, targetWeight * 8)}" fill="#38bdf8"/>
+                        <rect x="355" y="${y - 14}" width="115" height="28" rx="7" 
+                              fill="rgba(56, 189, 248, ${(targetWeight * 0.45).toFixed(2)})" 
+                              stroke="${highlightRight ? '#38bdf8' : 'rgba(255,255,255,0.15)'}" stroke-width="${highlightRight ? '1.8' : '1'}"/>
+                        <text x="412" y="${y + 4}" text-anchor="middle" fill="#ffffff" 
+                              font-family="JetBrains Mono" font-size="11" font-weight="${highlightRight ? '700' : '400'}">
+                            ${tokens[idx].slice(0, 8)} (${(targetWeight * 100).toFixed(0)}%)
+                        </text>
+                    </g>
+                `;
+            }
+
+            svg.innerHTML = defs + backgroundArcs + activeArcs + leftNodes + rightNodes;
+
+            // Attach interactive hover/click listeners to source and target nodes
+            svg.querySelectorAll('[data-q-idx]').forEach(el => {
+                const idx = parseInt(el.getAttribute('data-q-idx'), 10);
+                el.addEventListener('mouseenter', () => selectAttentionToken(idx));
+                el.addEventListener('click', () => selectAttentionToken(idx));
+            });
+            svg.querySelectorAll('[data-k-idx]').forEach(el => {
+                const idx = parseInt(el.getAttribute('data-k-idx'), 10);
+                el.addEventListener('click', () => selectAttentionToken(idx));
+            });
+        }
+
+        // Render Interactive N x N Attention Heatmap Matrix
+        function renderHeatmapMatrix() {
+            const container = document.getElementById('attn-heatmap-container');
+            const { tokens, selectedTokenIdx, probsMatrix, causalMask } = attnState;
+            const N = tokens.length;
+
+            let html = `<table class="w-full border-collapse font-mono text-[11px]">`;
+            // Header Row (Keys)
+            html += `<thead><tr><th class="p-1.5 text-left text-slate-500 border-b border-white/10">Q \\ K</th>`;
+            for (let j = 0; j < N; j++) {
+                html += `<th class="p-1.5 text-center text-cyanGlow border-b border-white/10 truncate max-w-[60px]" title="${tokens[j]}">${tokens[j].slice(0, 6)}</th>`;
+            }
+            html += `</tr></thead><tbody>`;
+
+            // Matrix Rows
+            for (let i = 0; i < N; i++) {
+                const isSelectedRow = i === selectedTokenIdx;
+                html += `<tr class="heatmap-row cursor-pointer transition-colors ${isSelectedRow ? 'bg-tealGlow/10' : 'hover:bg-white/5'}" data-row-idx="${i}">`;
+                html += `<td class="p-1.5 font-semibold ${isSelectedRow ? 'text-tealGlow' : 'text-slate-300'} border-r border-white/10 truncate max-w-[70px]" title="${tokens[i]}">${tokens[i].slice(0, 7)}</td>`;
+
+                for (let j = 0; j < N; j++) {
+                    const w = probsMatrix[i][j] || 0;
+                    const isMasked = causalMask && j > i;
+                    const bgAlpha = isMasked ? 0 : Math.min(0.9, Math.max(0.06, w * 1.15));
+                    const textColor = w > 0.45 ? '#060913' : (isMasked ? '#475569' : '#e2e8f0');
+
+                    html += `
+                        <td class="p-1.5 text-center border border-white/5 rounded transition-all"
+                            style="background-color: ${isMasked ? 'rgba(15, 23, 42, 0.5)' : `rgba(45, 212, 191, ${bgAlpha.toFixed(2)})`}; color: ${textColor}; font-weight: ${w > 0.25 ? '700' : '400'};">
+                            ${isMasked ? '-∞' : w.toFixed(2)}
+                        </td>
+                    `;
+                }
+                html += `</tr>`;
+            }
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+
+            container.querySelectorAll('.heatmap-row').forEach(row => {
+                row.addEventListener('click', () => {
+                    selectAttentionToken(parseInt(row.getAttribute('data-row-idx'), 10));
+                });
+                row.addEventListener('mouseenter', () => {
+                    selectAttentionToken(parseInt(row.getAttribute('data-row-idx'), 10));
+                });
+            });
+        }
+
+        // Update Live Q / K / V Vector Inspector Panel
+        function updateVectorInspector() {
+            const { tokens, selectedTokenIdx, headIdx, probsMatrix } = attnState;
+            const tok = tokens[selectedTokenIdx] || tokens[0];
+            const weights = probsMatrix[selectedTokenIdx] || [];
+
+            // Find top attended key token
+            let topJ = 0;
+            let topW = -1;
+            weights.forEach((w, j) => {
+                if (w > topW) {
+                    topW = w;
+                    topJ = j;
+                }
+            });
+
+            const vecSelected = getTokenVectors(tok, selectedTokenIdx, headIdx);
+            const vecTopKey = getTokenVectors(tokens[topJ] || tok, topJ, headIdx);
+
+            // Compute weighted context vector Z_i = sum(alpha_ij * V_j)
+            const zOut = [0, 0, 0, 0];
+            tokens.forEach((t, j) => {
+                const vj = getTokenVectors(t, j, headIdx).v;
+                const w = weights[j] || 0;
+                for (let d = 0; d < 4; d++) zOut[d] += w * vj[d];
+            });
+
+            document.getElementById('active-token-pill').textContent = `Query: [${tok}]`;
+            document.getElementById('inspector-token-name').textContent = `"${tok}" (pos ${selectedTokenIdx})`;
+            document.getElementById('inspector-top-match').textContent = `Top Attended Key: "${tokens[topJ]}" (Weight: ${(topW * 100).toFixed(1)}%)`;
+            document.getElementById('head-behavior-desc').textContent = headDescriptions[headIdx];
+
+            const fmtVec = (arr) => `[ ${arr.map(v => v.toFixed(2)).join(', ')} ]`;
+            document.getElementById('vec-q').textContent = fmtVec(vecSelected.q);
+            document.getElementById('vec-k').textContent = fmtVec(vecTopKey.k);
+            document.getElementById('vec-v').textContent = fmtVec(vecSelected.v);
+            document.getElementById('vec-z').textContent = fmtVec(zOut);
+        }
+
+        function selectAttentionToken(idx) {
+            if (idx < 0 || idx >= attnState.tokens.length) return;
+            attnState.selectedTokenIdx = idx;
+            renderBipartiteSVG();
+            renderHeatmapMatrix();
+            updateVectorInspector();
+        }
+
+        function refreshTransformerVisualizer() {
+            if (attnState.selectedTokenIdx >= attnState.tokens.length) {
+                attnState.selectedTokenIdx = 0;
+            }
+            computeAttentionMatrix();
+            renderBipartiteSVG();
+            renderHeatmapMatrix();
+            updateVectorInspector();
+        }
+
+        // Event Listeners for Transformer Visualizer Controls
+        document.getElementById('attn-preset-select').addEventListener('change', (e) => {
+            const sentence = presetSentences[parseInt(e.target.value, 10)];
+            attnState.tokens = sentence.split(/\s+/).slice(0, 8);
+            attnState.selectedTokenIdx = Math.min(1, attnState.tokens.length - 1);
+            document.getElementById('attn-custom-input').value = '';
+            refreshTransformerVisualizer();
+        });
+
+        function applyCustomPrompt() {
+            const raw = document.getElementById('attn-custom-input').value.trim();
+            if (!raw) {
+                showToast('Please enter a short prompt first.');
+                return;
+            }
+            const words = raw.split(/\s+/).slice(0, 8);
+            attnState.tokens = words;
+            attnState.selectedTokenIdx = 0;
+            refreshTransformerVisualizer();
+            showToast(`Tokenized ${words.length} tokens into Self-Attention Matrix!`);
+        }
+
+        document.getElementById('attn-apply-btn').addEventListener('click', applyCustomPrompt);
+        document.getElementById('attn-custom-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') applyCustomPrompt();
+        });
+
+        // Attention Head Buttons
+        document.querySelectorAll('.attn-head-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.attn-head-btn').forEach(b => {
+                    b.className = 'attn-head-btn px-3 py-2 rounded-xl font-mono text-xs font-semibold bg-slateDark text-slate-300 border border-white/10 hover:border-tealGlow/40 transition-all text-left';
+                });
+                btn.className = 'attn-head-btn px-3 py-2 rounded-xl font-mono text-xs font-semibold bg-gradient-to-r from-tealGlow to-cyanGlow text-obsidian shadow-neon-teal transition-all text-left';
+                attnState.headIdx = parseInt(btn.getAttribute('data-head'), 10);
+                refreshTransformerVisualizer();
+            });
+        });
+
+        // Temperature Slider
+        document.getElementById('attn-temp-slider').addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            attnState.temperature = val;
+            const label = val < 0.6 ? 'Peak/Argmax' : (val > 1.5 ? 'Flat/Uniform' : 'Balanced');
+            document.getElementById('attn-temp-val').textContent = `${val.toFixed(2)} (${label})`;
+            refreshTransformerVisualizer();
+        });
+
+        // Causal Mask Toggle
+        const causalBtn = document.getElementById('attn-causal-toggle');
+        causalBtn.addEventListener('click', () => {
+            attnState.causalMask = !attnState.causalMask;
+            causalBtn.setAttribute('aria-checked', attnState.causalMask);
+            if (attnState.causalMask) {
+                causalBtn.textContent = 'ON (Causal Decoder Mask)';
+                causalBtn.className = 'px-3.5 py-1.5 rounded-xl font-mono text-xs font-bold border border-tealGlow bg-tealGlow/15 text-tealGlow transition-all';
+            } else {
+                causalBtn.textContent = 'OFF (Bidirectional)';
+                causalBtn.className = 'px-3.5 py-1.5 rounded-xl font-mono text-xs font-semibold border border-white/15 bg-obsidian text-slate-400 hover:border-cyanGlow/50 transition-all';
+            }
+            refreshTransformerVisualizer();
+        });
+
+        // ==========================================
+        // WORKBENCH PROJECTS & RESEARCH LOGS DATA
+        // ==========================================
+        const labProjects = [
+            {
+                id: 1,
+                category: 'agentic-ai',
+                badge: 'Agentic AI • Google ADK',
+                title: 'Autonomous Incident Investigator with ADK & Gemini',
+                desc: 'Multi-agent diagnostic pipeline that ingests real-time server telemetry, correlates anomaly stack traces, and proposes root-cause patches.',
+                tags: ['Google ADK', 'Gemini', 'Python', 'Agents'],
+                takeaways: [
+                    'Structured deterministic tool-calling to prevent hallucinated shell commands.',
+                    'Sub-second log chunking with sliding time-window context management.',
+                    'Automated severity scoring and human-in-the-loop approval gates.'
+                ]
+            },
+            {
+                id: 2,
+                category: 'data-systems',
+                badge: 'Data Systems • Full-Stack AI',
+                title: 'Runlytic Time-Series & Strava AI Coach',
+                desc: 'End-to-end analytics engine transforming raw GPS, heart-rate, and cadence streams from Strava OAuth into personalized Gemini coaching feedback.',
+                tags: ['Next.js', 'FastAPI', 'Strava API', 'Gemini'],
+                takeaways: [
+                    'Downsampled noisy workout telemetry into compact statistical tensors.',
+                    'Prompt-engineered deterministic JSON schemas for pace & zone charts.',
+                    'Async Python backend with streaming token delivery to React dashboard.'
+                ]
+            },
+            {
+                id: 3,
+                category: 'computer-vision',
+                badge: 'Computer Vision • Edge Inference',
+                title: 'Local Vision & Skeletal Edge Inference Pipeline',
+                desc: 'Combining MediaPipe skeletal landmark extraction with lightweight local neural classifiers for zero-latency spatial interaction.',
+                tags: ['MediaPipe', 'OpenCV', 'PyTorch', 'Edge AI'],
+                takeaways: [
+                    'Achieved 60+ FPS 3D landmark extraction on consumer hardware.',
+                    'View-invariant coordinate normalization across varying camera angles.',
+                    '100% local execution with zero cloud API round-trip latency.'
+                ]
+            },
+            {
+                id: 4,
+                category: 'edge-iot',
+                badge: 'Edge IoT • MQTT Telemetry',
+                title: '31-Slot IoT Telemetry & Automated MQTT Dispenser',
+                desc: 'Hardware-software integration bridging microcontrollers, real-time MQTT message brokers, and cloud state synchronization for automated dispensing.',
+                tags: ['MQTT', 'IoT', 'Embedded', 'Real-Time'],
+                takeaways: [
+                    'Fault-tolerant QoS MQTT pub/sub architecture with instant state ack.',
+                    '31-slot indexed hardware actuation with optical sensor verification.',
+                    'Real-time telemetry logging for predictive maintenance alerts.'
+                ]
+            },
+            {
+                id: 5,
+                category: 'agentic-ai',
+                badge: 'Agentic AI • Vector RAG',
+                title: 'Hybrid HNSW Vector Search & Multi-Hop RAG Agent',
+                desc: 'Benchmarking Hierarchical Navigable Small World (HNSW) vector indexes paired with self-reflective query rewriting agents.',
+                tags: ['RAG', 'HNSW', 'Embeddings', 'LangGraph'],
+                takeaways: [
+                    'Reciprocal Rank Fusion (RRF) combining BM25 lexical and dense embeddings.',
+                    'Semantic boundary chunking outperforms fixed-token windows by 28% recall.',
+                    'Self-correcting grading loop filters out low-relevance context chunks.'
+                ]
+            },
+            {
+                id: 6,
+                category: 'data-systems',
+                badge: 'Data Systems • MLOps',
+                title: 'Quantized Open-Weights vLLM Serving Benchmark',
+                desc: 'Throughput, VRAM footprint, and token-latency benchmarks comparing 4-bit AWQ local models against commercial cloud APIs.',
+                tags: ['vLLM', 'Quantization', 'CUDA', 'Benchmarks'],
+                takeaways: [
+                    'Continuous batching and PagedAttention reduce KV-cache fragmentation.',
+                    '4-bit quantization preserves 97% downstream task accuracy on structured JSON.',
+                    'Dynamic router directs simple classification to local 8B models.'
+                ]
+            }
+        ];
+
+        const projectsGrid = document.getElementById('projects-grid');
+        const modal = document.getElementById('project-modal');
+
+        function renderProjects(filter = 'all') {
+            projectsGrid.innerHTML = '';
+            const filtered = filter === 'all' ? labProjects : labProjects.filter(p => p.category === filter);
+
+            filtered.forEach(proj => {
+                const card = document.createElement('div');
+                card.className = 'glass-card rounded-2xl p-6 flex flex-col justify-between cursor-pointer group';
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="font-mono text-[11px] text-tealGlow bg-tealGlow/10 px-2.5 py-1 rounded-md border border-tealGlow/20">
+                                ${proj.badge}
+                            </span>
+                            <i data-lucide="arrow-up-right" class="w-4 h-4 text-slate-400 group-hover:text-tealGlow group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white group-hover:text-cyanGlow transition-colors mb-2">
+                            ${proj.title}
+                        </h3>
+                        <p class="text-slate-400 text-xs sm:text-sm leading-relaxed mb-6">
+                            ${proj.desc}
+                        </p>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5 pt-4 border-t border-white/10">
+                        ${proj.tags.map(t => `<span class="font-mono text-[11px] px-2 py-0.5 rounded bg-white/5 text-slate-300">${t}</span>`).join('')}
+                    </div>
+                `;
+                card.addEventListener('click', () => openProjectModal(proj));
+                projectsGrid.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        function openProjectModal(proj) {
+            document.getElementById('modal-badge').textContent = proj.badge;
+            document.getElementById('modal-title').textContent = proj.title;
+            document.getElementById('modal-desc').textContent = proj.desc;
+            
+            const takeawaysList = document.getElementById('modal-takeaways');
+            takeawaysList.innerHTML = proj.takeaways.map(item => `
+                <li class="flex items-start gap-2">
+                    <span class="text-tealGlow">▹</span>
+                    <span>${item}</span>
+                </li>
+            `).join('');
+
+            const tagsContainer = document.getElementById('modal-tags');
+            tagsContainer.innerHTML = proj.tags.map(t => `
+                <span class="font-mono text-xs px-2.5 py-1 rounded-lg bg-white/5 text-cyanGlow border border-cyanGlow/20">${t}</span>
+            `).join('');
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeProjectModal() {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        document.getElementById('close-modal-btn').addEventListener('click', closeProjectModal);
+        document.getElementById('modal-close-action').addEventListener('click', closeProjectModal);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeProjectModal();
+        });
+
+        // Filter Button Listeners
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => {
+                    b.classList.remove('bg-tealGlow', 'text-obsidian');
+                    b.classList.add('glass-card', 'text-slate-300');
+                });
+                btn.classList.remove('glass-card', 'text-slate-300');
+                btn.classList.add('bg-tealGlow', 'text-obsidian');
+                renderProjects(btn.getAttribute('data-filter'));
+            });
+        });
+
+        // ==========================================
+        // INTERACTIVE NEURAL-TENSOR CANVAS ANIMATION
+        // ==========================================
+        const canvas = document.getElementById('neural-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let mouse = { x: null, y: null, radius: 130 };
+
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+            initParticles();
+        }
+
+        function initParticles() {
+            particles = [];
+            const count = Math.min(65, Math.floor((canvas.width * canvas.height) / 16000));
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 0.55,
+                    vy: (Math.random() - 0.5) * 0.55,
+                    size: Math.random() * 2 + 1.2,
+                    color: i % 2 === 0 ? '#00f5d4' : '#00f2fe'
+                });
+            }
+        }
+
+        function animateCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < particles.length; i++) {
+                let p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+
+                if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+                // Draw node
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.fill();
+
+                // Connect nearby nodes (synapses/tensor edges)
+                for (let j = i + 1; j < particles.length; j++) {
+                    let p2 = particles[j];
+                    let dx = p.x - p2.x;
+                    let dy = p.y - p2.y;
+                    let dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 135) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = `rgba(0, 242, 254, ${(1 - dist / 135) * 0.22})`;
+                        ctx.lineWidth = 1;
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.stroke();
+                    }
+                }
+
+                // Mouse interaction
+                if (mouse.x !== null) {
+                    let dx = p.x - mouse.x;
+                    let dy = p.y - mouse.y;
+                    let dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < mouse.radius) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = `rgba(0, 245, 212, ${(1 - dist / mouse.radius) * 0.5})`;
+                        ctx.lineWidth = 1.4;
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(mouse.x, mouse.y);
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(animateCanvas);
+        }
+
+        window.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            mouse.x = e.clientX - rect.left;
+            mouse.y = e.clientY - rect.top;
+        });
+
+        window.addEventListener('mouseout', () => {
+            mouse.x = null;
+            mouse.y = null;
+        });
+
+        window.addEventListener('resize', resizeCanvas);
+
+        window.onload = function () {
+            resizeCanvas();
+            animateCanvas();
+            updatePerceptronSim();
+            refreshTransformerVisualizer();
+            renderProjects('all');
+        };
+    </script>
+</body>
+</html>
