@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Interview Copilot</title>
+<style>
+  :root{
+    --bg:#f5f5f7; --card:#ffffff; --ink:#1d1d1f; --muted:#6e6e73; --line:#e5e5ea;
+    --blue:#0071e3; --green:#34c759; --red:#ff3b30; --orange:#ff9f0a;
+    --r:14px; --shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.06);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{--bg:#000;--card:#1c1c1e;--ink:#f5f5f7;--muted:#98989d;--line:#2c2c2e;--shadow:none}
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font:15px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Inter,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+  header{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:12px;padding:14px 24px;background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--line)}
+  header h1{font-size:17px;font-weight:600;margin:0;letter-spacing:-.01em}
+  .status{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);margin-left:auto}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+  .dot.on{background:var(--red);animation:pulse 1.4s infinite}
+  .dot.busy{background:var(--orange)}
+  @keyframes pulse{50%{opacity:.35}}
+  main{display:grid;grid-template-columns:320px 1fr;gap:20px;padding:20px 24px;max-width:1400px;margin:0 auto}
+  @media(max-width:900px){main{grid-template-columns:1fr}}
+  .card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:18px;border:1px solid var(--line)}
+  .card h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:0 0 12px}
+  label{display:block;font-size:13px;font-weight:500;margin:12px 0 6px}
+  input,textarea,select{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 11px;outline:none;transition:border .15s}
+  input:focus,textarea:focus,select:focus{border-color:var(--blue)}
+  textarea{resize:vertical;min-height:70px}
+  .hint{font-size:12px;color:var(--muted);margin-top:4px}
+  .row{display:flex;gap:8px;align-items:center}
+  button{font:inherit;font-weight:500;border:0;border-radius:980px;padding:9px 18px;cursor:pointer;background:var(--line);color:var(--ink);transition:transform .08s,opacity .15s}
+  button:active{transform:scale(.97)}
+  button:disabled{opacity:.4;cursor:default}
+  .primary{background:var(--blue);color:#fff}
+  .danger{background:var(--red);color:#fff}
+  .seg{display:flex;background:var(--bg);border-radius:10px;padding:3px;border:1px solid var(--line)}
+  .seg button{flex:1;border-radius:8px;padding:6px 8px;font-size:13px;background:transparent}
+  .seg button.active{background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+  .toggle{display:flex;align-items:center;justify-content:space-between;margin-top:12px;font-size:13px}
+  .switch{position:relative;width:44px;height:26px;flex:none}
+  .switch input{opacity:0;width:0;height:0}
+  .switch span{position:absolute;inset:0;background:var(--line);border-radius:26px;transition:.2s;cursor:pointer}
+  .switch span:before{content:"";position:absolute;width:22px;height:22px;left:2px;top:2px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+  .switch input:checked+span{background:var(--green)}
+  .switch input:checked+span:before{transform:translateX(18px)}
+  .stage{display:grid;grid-template-rows:auto 1fr;gap:20px;min-width:0}
+  .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .big{padding:12px 26px;font-size:16px}
+  .transcript{max-height:180px;overflow:auto;font-size:15px;color:var(--muted);white-space:pre-wrap}
+  .transcript .new{color:var(--ink)}
+  .transcript .interim{color:var(--muted);font-style:italic}
+  .answer{font-size:17px;line-height:1.6}
+  .answer .q{font-size:13px;color:var(--muted);margin-bottom:8px;border-left:3px solid var(--blue);padding-left:10px}
+  .answer ul{padding-left:20px;margin:6px 0}
+  .answer p{margin:6px 0}
+  .answer strong{font-weight:600}
+  .empty{color:var(--muted);text-align:center;padding:40px 0}
+  .history details{border-top:1px solid var(--line);padding:10px 0}
+  .history summary{cursor:pointer;font-weight:500;font-size:14px}
+  .history .body{font-size:14px;margin-top:6px}
+  kbd{font:12px ui-monospace,monospace;background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+  .err{color:var(--red);font-size:13px;margin-top:8px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Interview Copilot</h1>
+  <div class="status"><span class="dot" id="dot"></span><span id="statusText">Idle</span></div>
+</header>
+
+<main>
+  <!-- ───────── Settings ───────── -->
+  <aside class="card">
+    <h2>Setup</h2>
+    <label>Gemini API key</label>
+    <input id="apiKey" type="password" placeholder="AIza…" autocomplete="off">
+    <div class="hint">Saved only in this browser. Get one at aistudio.google.com/apikey</div>
+
+    <label>Model</label>
+    <input id="model" value="gemini-2.5-flash">
+    <div class="hint">Use any model name from AI Studio (Flash is quicker).</div>
+
+    <label>Audio source</label>
+    <div class="seg" id="sourceSeg">
+      <button data-v="mic" class="active">Microphone</button>
+      <button data-v="tab">Tab / System</button>
+    </div>
+    <div class="hint" id="sourceHint">Live transcript via Chrome speech recognition. Good for in-person interviews or speakers.</div>
+
+    <div class="toggle">Auto-answer on pause
+      <label class="switch"><input type="checkbox" id="auto" checked><span></span></label>
+    </div>
+    <div class="hint">Microphone mode only. Answers after about 2 seconds of silence.</div>
+
+    <label>Role / job description</label>
+    <textarea id="jd" placeholder="e.g. AI Engineer at …, requirements: Python, RAG, LLM ops…"></textarea>
+
+    <label>About me (CV highlights)</label>
+    <textarea id="cv" placeholder="Experience, key projects, achievements, numbers…"></textarea>
+
+    <label>Answer style</label>
+    <select id="style">
+      <option value="bullets">Short talking points (bullets)</option>
+      <option value="star">STAR format (behavioural)</option>
+      <option value="script">Full spoken answer (~45 sec)</option>
+    </select>
+  </aside>
+
+  <!-- ───────── Stage ───────── -->
+  <section class="stage">
+    <div class="card">
+      <div class="controls">
+        <button class="primary big" id="startBtn">Start listening</button>
+        <button class="big" id="answerBtn" disabled>Answer now <kbd>Space</kbd></button>
+        <button id="clearBtn">Clear transcript</button>
+      </div>
+      <div class="err" id="err"></div>
+      <h2 style="margin-top:16px">Transcript</h2>
+      <div class="transcript" id="transcript"><span class="empty" style="padding:0">Nothing heard yet.</span></div>
+    </div>
+
+    <div class="card">
+      <h2>Suggested answer</h2>
+      <div class="answer" id="answer"><div class="empty">Answers will appear here.</div></div>
+      <div class="history" id="history"></div>
+    </div>
+  </section>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const S = { source:'mic', listening:false, busy:false, rec:null, mediaRec:null, chunks:[], stream:null,
+            consumed:'', fresh:'', interim:'', pauseTimer:null, history:[] };
+
+// ── persistence
+['apiKey','model','jd','cv','style'].forEach(k=>{
+  try{ const v=localStorage.getItem('ic_'+k); if(v!==null) $(k).value=v; }catch{}
+  $(k).addEventListener('input',()=>{ try{localStorage.setItem('ic_'+k,$(k).value)}catch{} });
+});
+
+// ── source selector
+$('sourceSeg').onclick = e=>{
+  const b=e.target.closest('button'); if(!b||S.listening) return;
+  [...$('sourceSeg').children].forEach(x=>x.classList.toggle('active',x===b));
+  S.source=b.dataset.v;
+  $('sourceHint').textContent = S.source==='mic'
+    ? 'Live transcript via Chrome speech recognition. Good for in-person interviews or speakers.'
+    : 'Captures audio from a tab (Zoom/Meet/Teams in browser). Tick "Share tab audio". Gemini hears the clip when you press Answer.';
+};
+
+function setStatus(t,mode){ $('statusText').textContent=t; $('dot').className='dot '+(mode||''); }
+function err(m){ $('err').textContent=m||''; }
+
+// ── transcript rendering
+function renderTranscript(){
+  const el=$('transcript');
+  if(S.source==='tab'){ el.innerHTML='<span class="interim">Recording tab audio… press Answer when the question is finished.</span>'; return; }
+  if(!S.consumed && !S.fresh && !S.interim){ el.innerHTML='<span class="empty" style="padding:0">Nothing heard yet.</span>'; return; }
+  el.innerHTML = esc(S.consumed.slice(-600)) + '<span class="new">'+esc(S.fresh)+'</span><span class="interim"> '+esc(S.interim)+'</span>';
+  el.scrollTop=el.scrollHeight;
+}
+const esc = s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+// ── MIC: Web Speech API
+function startMic(){
+  const SR = window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){ err('Speech recognition is not supported here. Use Chrome or Edge, or switch to Tab / System mode.'); return false; }
+  const r=new SR(); r.continuous=true; r.interimResults=true; r.lang='en-US';
+  r.onresult = e=>{
+    let interim='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      const t=e.results[i][0].transcript;
+      if(e.results[i].isFinal) S.fresh += t.trim()+' '; else interim+=t;
+    }
+    S.interim=interim; renderTranscript();
+    clearTimeout(S.pauseTimer);
+    if($('auto').checked && S.fresh.trim().split(/\s+/).length>=4){
+      S.pauseTimer=setTimeout(()=>{ if(!S.interim) answer(); },2000);
+    }
+  };
+  r.onerror = e=>{ if(e.error!=='no-speech' && e.error!=='aborted') err('Mic error: '+e.error); };
+  r.onend = ()=>{ if(S.listening && S.source==='mic') try{r.start()}catch{} }; // Chrome stops randomly, so restart
+  r.start(); S.rec=r; return true;
+}
+
+// ── TAB: getDisplayMedia + MediaRecorder
+async function startTab(){
+  try{
+    const s=await navigator.mediaDevices.getDisplayMedia({video:true,audio:true});
+    const tracks=s.getAudioTracks();
+    if(!tracks.length){ s.getTracks().forEach(t=>t.stop()); err('No audio shared. Pick a tab and tick "Share tab audio".'); return false; }
+    s.getVideoTracks().forEach(t=>t.stop());
+    S.stream=new MediaStream(tracks);
+    tracks[0].onended=()=>stop();
+    newRecorder(); return true;
+  }catch(e){ err('Screen share cancelled.'); return false; }
+}
+function newRecorder(){
+  S.chunks=[];
+  const mr=new MediaRecorder(S.stream,{mimeType:'audio/webm'});
+  mr.ondataavailable=e=>e.data.size&&S.chunks.push(e.data);
+  mr.start(1000); S.mediaRec=mr;
+}
+function cutClip(){
+  return new Promise(res=>{
+    const mr=S.mediaRec;
+    mr.onstop=()=>{ const b=new Blob(S.chunks,{type:'audio/webm'}); if(S.listening) newRecorder(); res(b); };
+    mr.stop();
+  });
+}
+
+// ── start / stop
+$('startBtn').onclick=async()=>{
+  if(S.listening) return stop();
+  err();
+  if(!$('apiKey').value.trim()){ err('Add your Gemini API key first.'); $('apiKey').focus(); return; }
+  const ok = S.source==='mic' ? startMic() : await startTab();
+  if(!ok) return;
+  S.listening=true;
+  $('startBtn').textContent='Stop'; $('startBtn').className='danger big';
+  $('answerBtn').disabled=false; setStatus('Listening','on'); renderTranscript();
+};
+function stop(){
+  S.listening=false; clearTimeout(S.pauseTimer);
+  try{S.rec&&S.rec.stop()}catch{}; S.rec=null;
+  try{S.mediaRec&&S.mediaRec.state!=='inactive'&&S.mediaRec.stop()}catch{};
+  S.stream&&S.stream.getTracks().forEach(t=>t.stop()); S.stream=null;
+  $('startBtn').textContent='Start listening'; $('startBtn').className='primary big';
+  $('answerBtn').disabled=true; setStatus('Idle');
+}
+$('answerBtn').onclick=()=>answer();
+$('clearBtn').onclick=()=>{ S.consumed='';S.fresh='';S.interim='';renderTranscript(); };
+document.addEventListener('keydown',e=>{
+  if(e.code==='Space' && S.listening && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){ e.preventDefault(); answer(); }
+});
+
+// ── prompt
+function systemPrompt(){
+  const style={
+    bullets:'Give 3–5 concise bullet talking points the candidate can glance at and say naturally. Bold the key phrase in each.',
+    star:'Structure as STAR: **Situation**, **Task**, **Action**, **Result**. One or two short lines each, using the candidate\'s real experience.',
+    script:'Write a natural, confident spoken answer of about 100–130 words, first person.'
+  }[$('style').value];
+  return `You are an interview coach helping a candidate in real time.
+The transcript comes from speech recognition, so it may contain errors and both speakers mixed together. Work out the most recent question the interviewer asked.
+Reply in this exact format:
+**Q:** <the question, cleaned up, one line>
+<the answer>
+${style}
+Ground the answer in the candidate's background below. Never invent employers, degrees, or numbers they did not give. If something is missing, suggest a framing in [brackets].
+For a technical question, give the correct core concept first.
+
+ROLE / JD:
+${$('jd').value||'(not provided)'}
+
+CANDIDATE BACKGROUND:
+${$('cv').value||'(not provided)'}`;
+}
+
+// ── call Gemini (streaming)
+async function answer(){
+  if(S.busy||!S.listening) return;
+  clearTimeout(S.pauseTimer);
+  let parts;
+  if(S.source==='mic'){
+    const text=(S.fresh+' '+S.interim).trim();
+    if(!text) return;
+    const ctx=S.consumed.slice(-1500);
+    parts=[{text:`Earlier conversation (context):\n${ctx||'(none)'}\n\nLatest speech (the question is most likely here):\n${text}`}];
+    S.consumed+=text+' '; S.fresh=''; S.interim='';
+    renderTranscript();
+  }else{
+    const blob=await cutClip();
+    if(blob.size<2000) return;
+    const b64=await new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(fr.result.split(',')[1]);fr.readAsDataURL(blob);});
+    parts=[{inline_data:{mime_type:'audio/webm',data:b64}},{text:'This audio is the latest part of the interview. Identify the interviewer\'s most recent question and answer it.'}];
+  }
+
+  S.busy=true; setStatus('Thinking…','busy');
+  const out=$('answer'); out.innerHTML='<div class="empty">Thinking…</div>';
+  const key=$('apiKey').value.trim(), model=$('model').value.trim()||'gemini-2.5-flash';
+  let full='';
+  try{
+    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:streamGenerateContent?alt=sse`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-goog-api-key':key},
+      body:JSON.stringify({
+        systemInstruction:{parts:[{text:systemPrompt()}]},
+        contents:[{role:'user',parts}],
+        generationConfig:{temperature:0.6,maxOutputTokens:800}
+      })
+    });
+    if(!res.ok){ const j=await res.json().catch(()=>({})); throw new Error(j.error?.message||res.statusText); }
+    const reader=res.body.getReader(), dec=new TextDecoder(); let buf='';
+    while(true){
+      const {done,value}=await reader.read(); if(done) break;
+      buf+=dec.decode(value,{stream:true});
+      const lines=buf.split('\n'); buf=lines.pop();
+      for(const l of lines){
+        if(!l.startsWith('data:')) continue;
+        try{
+          const j=JSON.parse(l.slice(5));
+          full+=(j.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('');
+          out.innerHTML=md(full);
+        }catch{}
+      }
+    }
+    pushHistory(full);
+  }catch(e){
+    out.innerHTML='<div class="err">Gemini error: '+esc(e.message)+'</div>';
+  }finally{
+    S.busy=false; if(S.listening) setStatus('Listening','on'); else setStatus('Idle');
+  }
+}
+
+// ── minimal markdown: **bold**, bullets, the Q line
+function md(s){
+  const lines=esc(s).split('\n'); let html='',inList=false;
+  for(let l of lines){
+    l=l.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+    if(/^<strong>Q:<\/strong>/.test(l)){ html+=`<div class="q">${l.replace(/^<strong>Q:<\/strong>\s*/,'')}</div>`; continue; }
+    if(/^\s*[-*•]\s+/.test(l)){ if(!inList){html+='<ul>';inList=true;} html+='<li>'+l.replace(/^\s*[-*•]\s+/,'')+'</li>'; continue; }
+    if(inList){html+='</ul>';inList=false;}
+    if(l.trim()) html+='<p>'+l+'</p>';
+  }
+  return html+(inList?'</ul>':'');
+}
+
+function pushHistory(text){
+  if(!text) return;
+  const q=(text.match(/\*\*Q:\*\*\s*(.+)/)||[])[1]||'Question';
+  S.history.unshift({q,text});
+  $('history').innerHTML = S.history.slice(1,20).map(h=>
+    `<details><summary>${esc(h.q)}</summary><div class="body">${md(h.text.replace(/\*\*Q:\*\*.*\n?/,''))}</div></details>`).join('');
+}
+</script>
+</body>
+</html>
