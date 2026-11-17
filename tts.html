@@ -311,6 +311,10 @@ async function answer(){
 }
 async function callGemini(parts){
   if(S.busy) return;
+  if(/live|tts|transcribe|image|embedding/i.test($('model').value)){
+    $('answer').innerHTML='<div class="err">"'+esc($('model').value)+'" can\'t write answers in this tool. Live, TTS, Transcribe, image and embedding models need a different API. Use gemini-3.8-flash instead.</div>';
+    return;
+  }
   S.busy=true; setStatus('Thinking…','busy');
   const out=$('answer'); out.innerHTML='<div class="empty">Thinking…</div>';
   const key=$('apiKey').value.trim(), model=$('model').value.trim()||'gemini-2.5-flash';
