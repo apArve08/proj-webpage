@@ -15,7 +15,7 @@
   }
   *{box-sizing:border-box}
   body{margin:0;font:15px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Inter,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
-  header{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:12px;padding:14px 24px;background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--line)}
+  header{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:12px;padding:14px 32px;max-width:1400px;margin:0 auto;background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--line)}
   header h1{font-size:17px;font-weight:600;margin:0;letter-spacing:-.01em}
   .status{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);margin-left:auto}
   .dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
@@ -84,6 +84,16 @@
     <input id="model" value="gemini-2.5-flash">
     <div class="hint">Use any model name from AI Studio (Flash is quicker).</div>
 
+    <label>Speech accent / language</label>
+    <select id="lang">
+      <option value="en-GB">English (UK), closest to Malaysian English</option>
+      <option value="en-US">English (US)</option>
+      <option value="en-IN">English (India)</option>
+      <option value="en-SG">English (Singapore)</option>
+      <option value="ms-MY">Bahasa Melayu</option>
+    </select>
+    <div class="hint">Try another option if the transcript mishears words.</div>
+
     <label>Audio source</label>
     <div class="seg" id="sourceSeg">
       <button data-v="mic" class="active">Microphone</button>
@@ -124,7 +134,13 @@
     </div>
 
     <div class="card">
-      <h2>Suggested answer</h2>
+      <div class="row" style="justify-content:space-between;margin-bottom:12px">
+        <h2 style="margin:0">Suggested answer</h2>
+        <div class="row">
+          <button id="shorterBtn" style="font-size:13px;padding:6px 14px">Shorter</button>
+          <button id="retryBtn" style="font-size:13px;padding:6px 14px">Regenerate</button>
+        </div>
+      </div>
       <div class="answer" id="answer"><div class="empty">Answers will appear here.</div></div>
       <div class="history" id="history"></div>
     </div>
@@ -137,7 +153,7 @@ const S = { source:'mic', listening:false, busy:false, rec:null, mediaRec:null, 
             consumed:'', fresh:'', interim:'', pauseTimer:null, history:[] };
 
 // ── persistence
-['apiKey','model','jd','cv','style'].forEach(k=>{
+['apiKey','model','jd','cv','style','lang'].forEach(k=>{
   try{ const v=localStorage.getItem('ic_'+k); if(v!==null) $(k).value=v; }catch{}
   $(k).addEventListener('input',()=>{ try{localStorage.setItem('ic_'+k,$(k).value)}catch{} });
 });
@@ -169,7 +185,7 @@ const esc = s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 function startMic(){
   const SR = window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR){ err('Speech recognition is not supported here. Use Chrome or Edge, or switch to Tab / System mode.'); return false; }
-  const r=new SR(); r.continuous=true; r.interimResults=true; r.lang='en-US';
+  const r=new SR(); r.continuous=true; r.interimResults=true; r.lang=$('lang').value;
   r.onresult = e=>{
     let interim='';
     for(let i=e.resultIndex;i<e.results.length;i++){
@@ -233,6 +249,8 @@ function stop(){
   $('answerBtn').disabled=true; setStatus('Idle');
 }
 $('answerBtn').onclick=()=>answer();
+$('retryBtn').onclick=()=>S.lastParts&&callGemini(S.lastParts);
+$('shorterBtn').onclick=()=>S.lastParts&&callGemini([...S.lastParts,{text:'Make the answer much shorter: at most 3 bullets of 10 words or fewer each.'}]);
 $('clearBtn').onclick=()=>{ S.consumed='';S.fresh='';S.interim='';renderTranscript(); };
 document.addEventListener('keydown',e=>{
   if(e.code==='Space' && S.listening && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){ e.preventDefault(); answer(); }
@@ -251,6 +269,8 @@ Reply in this exact format:
 **Q:** <the question, cleaned up, one line>
 <the answer>
 ${style}
+IMPORTANT: Answer AS the candidate, in first person ("I…"). Never describe or explain what the question is asking. Start directly with the content of the answer.
+If the background below is empty, give a strong general answer that shows real knowledge of the topic.
 Ground the answer in the candidate's background below. Never invent employers, degrees, or numbers they did not give. If something is missing, suggest a framing in [brackets].
 For a technical question, give the correct core concept first.
 
@@ -280,6 +300,11 @@ async function answer(){
     parts=[{inline_data:{mime_type:'audio/webm',data:b64}},{text:'This audio is the latest part of the interview. Identify the interviewer\'s most recent question and answer it.'}];
   }
 
+  S.lastParts=parts;
+  return callGemini(parts);
+}
+async function callGemini(parts){
+  if(S.busy) return;
   S.busy=true; setStatus('Thinking…','busy');
   const out=$('answer'); out.innerHTML='<div class="empty">Thinking…</div>';
   const key=$('apiKey').value.trim(), model=$('model').value.trim()||'gemini-2.5-flash';
@@ -291,7 +316,8 @@ async function answer(){
       body:JSON.stringify({
         systemInstruction:{parts:[{text:systemPrompt()}]},
         contents:[{role:'user',parts}],
-        generationConfig:{temperature:0.6,maxOutputTokens:800}
+        generationConfig:{temperature:0.6,maxOutputTokens:1500,
+          ...(/2\.5/.test(model)?{thinkingConfig:{thinkingBudget:/pro/.test(model)?128:0}}:{})}
       })
     });
     if(!res.ok){ const j=await res.json().catch(()=>({})); throw new Error(j.error?.message||res.statusText); }
