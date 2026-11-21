@@ -1,0 +1,1900 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="morning">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>For My Dearest Mazz ♥</title>
+
+  <!-- Google Fonts: Playfair Display, Plus Jakarta Sans, and Dancing Script -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;700&family=Playfair+Display:ital,wght@0,500;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* ==========================================================================
+       1. DESIGN TOKENS & THEME VARIABLES (Rosy Morning & Starry Night)
+       ========================================================================== */
+    :root {
+      --bg-base: #FFF9F5;
+      --bg-grad-1: rgba(253, 232, 232, 0.88);
+      --bg-grad-2: rgba(216, 140, 154, 0.16);
+      --surface: rgba(255, 255, 255, 0.85);
+      --surface-solid: #FFFFFF;
+      --surface-soft: #FDF2F2;
+      --border-subtle: rgba(216, 140, 154, 0.28);
+      --border-gold: rgba(212, 175, 55, 0.44);
+      --text-primary: #5E2A3A;
+      --text-secondary: #8C5A68;
+      --text-muted: #A97D89;
+      --accent-rose: #D88C9A;
+      --accent-rose-deep: #B85C6F;
+      --accent-gold: #D4AF37;
+      --shadow-soft: 0 18px 45px -15px rgba(94, 42, 58, 0.12);
+      --shadow-glow: 0 10px 30px -8px rgba(216, 140, 154, 0.45);
+      --parchment-bg: linear-gradient(160deg, #FFFDF9 0%, #FFF5EE 100%);
+      --envelope-body: #FBF3EB;
+      --envelope-flap: #F5E6D8;
+      --envelope-inner: #EAD3C1;
+      --coupon-notch: #FFF9F5;
+    }
+
+    [data-theme="night"] {
+      --bg-base: #110F24;
+      --bg-grad-1: rgba(45, 27, 68, 0.76);
+      --bg-grad-2: rgba(122, 56, 86, 0.24);
+      --surface: rgba(28, 24, 52, 0.78);
+      --surface-solid: #1E1A38;
+      --surface-soft: rgba(44, 36, 76, 0.74);
+      --border-subtle: rgba(232, 165, 178, 0.22);
+      --border-gold: rgba(229, 197, 88, 0.38);
+      --text-primary: #FDF4F5;
+      --text-secondary: #D4BFC9;
+      --text-muted: #9E8A99;
+      --accent-rose: #E89AA9;
+      --accent-rose-deep: #D47689;
+      --accent-gold: #E5C558;
+      --shadow-soft: 0 20px 50px -15px rgba(0, 0, 0, 0.55);
+      --shadow-glow: 0 10px 32px -6px rgba(232, 154, 169, 0.35);
+      --parchment-bg: linear-gradient(160deg, rgba(35, 30, 62, 0.94) 0%, rgba(26, 22, 48, 0.96) 100%);
+      --envelope-body: #2A2246;
+      --envelope-flap: #332954;
+      --envelope-inner: #1D1733;
+      --coupon-notch: #110F24;
+    }
+
+    /* ==========================================================================
+       2. BASE TYPOGRAPHY & SMOOTH THEME TRANSITIONS
+       ========================================================================== */
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-base);
+      background-image:
+        radial-gradient(circle at 12% 15%, var(--bg-grad-1), transparent 46%),
+        radial-gradient(circle at 88% 80%, var(--bg-grad-2), transparent 52%);
+      background-attachment: fixed;
+      color: var(--text-primary);
+      overflow-x: hidden;
+      transition: background-color 0.7s ease, color 0.5s ease;
+    }
+
+    .font-serif-display {
+      font-family: 'Playfair Display', Georgia, serif;
+    }
+
+    .font-handwriting {
+      font-family: 'Dancing Script', cursive;
+    }
+
+    .themed-card {
+      background: var(--surface);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-soft);
+      transition: background 0.5s ease, border-color 0.5s ease, transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    /* ==========================================================================
+       3. CANVASES (Background Ambient + Foreground Burst Effects)
+       ========================================================================== */
+    #ambient-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    #fx-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 60;
+      pointer-events: none;
+    }
+
+    /* ==========================================================================
+       4. OPENING ENVELOPE SCREEN
+       ========================================================================== */
+    #envelope-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      background-color: var(--bg-base);
+      background-image:
+        radial-gradient(circle at 50% 35%, var(--bg-grad-1), transparent 60%),
+        radial-gradient(circle at 50% 85%, var(--bg-grad-2), transparent 55%);
+      transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.9s ease, transform 0.9s ease;
+    }
+
+    #envelope-overlay.hidden-overlay {
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(1.04);
+      pointer-events: none;
+    }
+
+    .envelope-stage {
+      position: relative;
+      width: min(90vw, 375px);
+      height: min(60vw, 248px);
+      perspective: 1100px;
+      cursor: pointer;
+    }
+
+    .envelope-wrapper {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border-radius: 14px;
+      background: var(--envelope-inner);
+      box-shadow: 0 28px 65px -18px rgba(94, 42, 58, 0.28), 0 0 0 1px var(--border-gold);
+      transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .envelope-stage:hover .envelope-wrapper {
+      transform: translateY(-4px);
+    }
+
+    /* Inner Letter Preview peeking out on open */
+    .envelope-letter-peek {
+      position: absolute;
+      left: 7%;
+      right: 7%;
+      top: 12%;
+      bottom: 10%;
+      background: var(--parchment-bg);
+      border: 1px solid var(--border-gold);
+      border-radius: 10px;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      text-align: center;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      transition: transform 0.85s cubic-bezier(0.22, 1, 0.36, 1) 0.25s;
+    }
+
+    .envelope-stage.is-open .envelope-letter-peek {
+      transform: translateY(-58%);
+    }
+
+    /* Front pocket folds */
+    .envelope-pocket {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      border-radius: 14px;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .envelope-pocket::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--envelope-body);
+      clip-path: polygon(0 0, 50% 54%, 100% 0, 100% 100%, 0 100%);
+    }
+
+    .envelope-pocket::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(94, 42, 58, 0.06), transparent 45%);
+      clip-path: polygon(0 100%, 50% 48%, 100% 100%);
+    }
+
+    /* Top triangular flap */
+    .envelope-flap {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 58%;
+      z-index: 4;
+      transform-origin: top center;
+      transition: transform 0.75s cubic-bezier(0.4, 0, 0.2, 1), z-index 0s linear 0.3s;
+      filter: drop-shadow(0 6px 10px rgba(94, 42, 58, 0.14));
+    }
+
+    .envelope-flap-shape {
+      width: 100%;
+      height: 100%;
+      background: var(--envelope-flap);
+      clip-path: polygon(0 0, 100% 0, 50% 100%);
+      border-top-left-radius: 14px;
+      border-top-right-radius: 14px;
+    }
+
+    .envelope-stage.is-open .envelope-flap {
+      transform: rotateX(180deg);
+      z-index: 1;
+    }
+
+    /* Glowing Crimson & Gold Wax Seal with M & V Emblem */
+    .wax-seal {
+      position: absolute;
+      left: 50%;
+      top: 52%;
+      transform: translate(-50%, -50%);
+      z-index: 5;
+      width: 74px;
+      height: 74px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 32% 30%, #C84B61 0%, #9E2A3F 55%, #751829 100%);
+      border: 2px solid rgba(212, 175, 55, 0.82);
+      box-shadow:
+        0 8px 22px rgba(158, 42, 63, 0.45),
+        inset 0 2px 6px rgba(255, 220, 220, 0.35),
+        inset 0 -4px 8px rgba(60, 10, 20, 0.45),
+        0 0 26px rgba(212, 175, 55, 0.38);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #FDE8E8;
+      transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s ease;
+      animation: sealPulse 2.8s ease-in-out infinite;
+    }
+
+    .wax-seal::before {
+      content: '';
+      position: absolute;
+      inset: 5px;
+      border-radius: 50%;
+      border: 1px dashed rgba(212, 175, 55, 0.58);
+    }
+
+    .envelope-stage.is-open .wax-seal {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(1.45) rotate(18deg);
+      animation: none;
+    }
+
+    @keyframes sealPulse {
+      0%, 100% { box-shadow: 0 8px 22px rgba(158, 42, 63, 0.45), 0 0 18px rgba(212, 175, 55, 0.32); }
+      50% { box-shadow: 0 10px 28px rgba(158, 42, 63, 0.62), 0 0 34px rgba(212, 175, 55, 0.68); }
+    }
+
+    /* ==========================================================================
+       5. VIRTUAL HUG BUTTON PULSE & FLOATING ANIMATIONS
+       ========================================================================== */
+    .hug-btn {
+      position: relative;
+      background: linear-gradient(135deg, #D88C9A 0%, #B85C6F 100%);
+      color: #FFF9F5;
+      box-shadow: 0 12px 30px -8px rgba(184, 92, 111, 0.55);
+      transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s ease;
+    }
+
+    .hug-btn::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 9999px;
+      border: 1.5px solid rgba(216, 140, 154, 0.55);
+      animation: ringPulse 2.6s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+      pointer-events: none;
+    }
+
+    .hug-btn:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 16px 36px -8px rgba(184, 92, 111, 0.68);
+    }
+
+    .hug-btn:active {
+      transform: scale(0.95);
+    }
+
+    @keyframes ringPulse {
+      0% { transform: scale(0.98); opacity: 0.75; }
+      75% { transform: scale(1.09); opacity: 0; }
+      100% { transform: scale(1.09); opacity: 0; }
+    }
+
+    /* ==========================================================================
+       6. REASONS I LOVE YOU — INTERACTIVE CARD DECK
+       ========================================================================== */
+    .reason-deck-container {
+      position: relative;
+      height: 270px;
+      max-width: 470px;
+      margin: 0 auto;
+      perspective: 1000px;
+      touch-action: pan-y;
+    }
+
+    .reason-card {
+      position: absolute;
+      inset: 0;
+      border-radius: 24px;
+      padding: 2rem 1.75rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      background: var(--surface-solid);
+      border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-soft);
+      user-select: none;
+      cursor: pointer;
+      transition: transform 0.48s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease, box-shadow 0.3s ease;
+    }
+
+    .reason-card.card-front {
+      z-index: 3;
+      transform: translateY(0) scale(1) rotate(0deg);
+    }
+
+    .reason-card.card-front:hover {
+      transform: translateY(-3px) scale(1.01);
+      border-color: var(--border-gold);
+    }
+
+    .reason-card.card-mid {
+      z-index: 2;
+      transform: translateY(12px) scale(0.95) rotate(-1.5deg);
+      opacity: 0.85;
+      pointer-events: none;
+    }
+
+    .reason-card.card-back {
+      z-index: 1;
+      transform: translateY(23px) scale(0.9) rotate(1.8deg);
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    .reason-card.flying-out-left {
+      transform: translateX(-115%) translateY(-18px) rotate(-14deg) scale(0.92);
+      opacity: 0;
+    }
+
+    .reason-card.flying-out-right {
+      transform: translateX(115%) translateY(-18px) rotate(14deg) scale(0.92);
+      opacity: 0;
+    }
+
+    /* ==========================================================================
+       7. PERFORATED LOVE COUPONS & STAMP ANIMATION
+       ========================================================================== */
+    .coupon-ticket {
+      position: relative;
+      border-radius: 18px;
+      background: var(--surface);
+      border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-soft);
+      overflow: hidden;
+      transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .coupon-ticket:hover {
+      transform: translateY(-3px);
+      border-color: var(--border-gold);
+    }
+
+    /* Ticket side notches */
+    .coupon-notch-left,
+    .coupon-notch-right {
+      position: absolute;
+      top: 50%;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--coupon-notch);
+      border: 1px solid var(--border-subtle);
+      transform: translateY(-50%);
+      z-index: 2;
+      transition: background-color 0.7s ease;
+    }
+
+    .coupon-notch-left { left: -12px; }
+    .coupon-notch-right { right: -12px; }
+
+    .coupon-stamp {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-12deg) scale(2.2);
+      opacity: 0;
+      pointer-events: none;
+      border: 2.5px solid #B85C6F;
+      color: #B85C6F;
+      background: rgba(255, 249, 245, 0.94);
+      padding: 0.32rem 0.95rem;
+      border-radius: 8px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      box-shadow: 0 4px 14px rgba(184, 92, 111, 0.22);
+      transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease;
+      z-index: 4;
+    }
+
+    [data-theme="night"] .coupon-stamp {
+      background: rgba(30, 26, 56, 0.94);
+      border-color: #E89AA9;
+      color: #E89AA9;
+    }
+
+    .coupon-ticket.is-redeemed .coupon-stamp {
+      opacity: 1;
+      transform: translate(-50%, -50%) rotate(-12deg) scale(1);
+    }
+
+    .coupon-ticket.is-redeemed .coupon-body {
+      opacity: 0.55;
+      filter: saturate(0.75);
+    }
+
+    /* ==========================================================================
+       8. PARCHMENT LOVE LETTER
+       ========================================================================== */
+    .parchment-letter {
+      position: relative;
+      background: var(--parchment-bg);
+      border: 1px solid var(--border-gold);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .parchment-corner {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      border-color: var(--accent-gold);
+      opacity: 0.55;
+      pointer-events: none;
+    }
+
+    /* ==========================================================================
+       9. PLAYFUL QUESTION ARENA
+       ========================================================================== */
+    .question-arena {
+      position: relative;
+      min-height: 155px;
+    }
+
+    #btn-no {
+      transition: left 0.22s cubic-bezier(0.22, 1, 0.36, 1), top 0.22s cubic-bezier(0.22, 1, 0.36, 1), transform 0.2s ease;
+    }
+
+    /* ==========================================================================
+       10. MUSIC EQUALIZER BARS & REVEAL ANIMATIONS
+       ========================================================================== */
+    .music-bars span {
+      display: inline-block;
+      width: 2.5px;
+      height: 10px;
+      margin: 0 1px;
+      border-radius: 2px;
+      background: currentColor;
+      transform-origin: bottom;
+      transition: transform 0.2s ease;
+    }
+
+    .music-playing .music-bars span:nth-child(1) { animation: barBounce 0.9s ease-in-out infinite; }
+    .music-playing .music-bars span:nth-child(2) { animation: barBounce 0.7s ease-in-out 0.2s infinite; }
+    .music-playing .music-bars span:nth-child(3) { animation: barBounce 1.05s ease-in-out 0.1s infinite; }
+
+    @keyframes barBounce {
+      0%, 100% { transform: scaleY(0.35); }
+      50% { transform: scaleY(1.15); }
+    }
+
+    .fade-up {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1), transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-rose-200 selection:text-rose-900">
+
+  <!-- Ambient Drifting Rose Petals & Hearts / Starry Fireflies Canvas -->
+  <canvas id="ambient-canvas" aria-hidden="true"></canvas>
+
+  <!-- Foreground Burst FX Canvas (Hearts & Confetti) -->
+  <canvas id="fx-canvas" aria-hidden="true"></canvas>
+
+  <!-- ========================================================================
+       TOP FLOATING CONTROLS (Ambient Music Box & Theme Toggle)
+       ======================================================================== -->
+  <div class="fixed top-4 right-4 z-40 flex items-center gap-2">
+    <!-- Music Box Toggle -->
+    <button
+      id="music-toggle"
+      type="button"
+      aria-label="Toggle gentle music box melody"
+      class="themed-card flex items-center gap-2 px-3.5 py-2 rounded-full text-xs sm:text-sm font-medium cursor-pointer hover:scale-105 active:scale-95"
+      style="color: var(--text-primary);"
+    >
+      <span class="music-bars flex items-end h-3.5" aria-hidden="true">
+        <span style="height: 7px;"></span>
+        <span style="height: 12px;"></span>
+        <span style="height: 9px;"></span>
+      </span>
+      <span id="music-label" class="hidden sm:inline">Music Box</span>
+    </button>
+
+    <!-- Theme Toggle (Rosy Morning / Starry Night) -->
+    <button
+      id="theme-toggle"
+      type="button"
+      aria-label="Switch between Rosy Morning and Starry Night theme"
+      class="themed-card flex items-center gap-2 px-3.5 py-2 rounded-full text-xs sm:text-sm font-medium cursor-pointer hover:scale-105 active:scale-95"
+      style="color: var(--text-primary);"
+    >
+      <span id="theme-icon" class="flex items-center justify-center">
+        <!-- Sun / Moon SVG injected via JS -->
+      </span>
+      <span id="theme-label" class="hidden sm:inline">Starry Night</span>
+    </button>
+  </div>
+
+  <!-- ========================================================================
+       1. OPENING ENVELOPE SCREEN
+       ======================================================================== -->
+  <section id="envelope-overlay" aria-label="Opening Love Letter Envelope">
+    <div class="text-center mb-7 space-y-2 relative z-10">
+      <p class="uppercase tracking-[0.26em] text-xs font-semibold" style="color: var(--accent-gold);">
+        A little something from <span class="js-his-name">Veen</span>
+      </p>
+      <h1 id="envelope-title" class="font-serif-display italic text-3xl sm:text-4xl font-semibold" style="color: var(--text-primary);">
+        For Mazz
+      </h1>
+    </div>
+
+    <!-- Interactive Envelope -->
+    <div id="envelope-stage" class="envelope-stage" role="button" tabindex="0" aria-label="Tap the wax seal to open your letter">
+      <div class="envelope-wrapper">
+        <!-- Peeking Letter Inside -->
+        <div class="envelope-letter-peek">
+          <p class="font-handwriting text-2xl sm:text-3xl mb-1" style="color: var(--accent-rose-deep);">
+            Dearest <span class="js-her-name">Mazz</span>,
+          </p>
+          <p class="text-xs sm:text-sm leading-relaxed" style="color: var(--text-secondary);">
+            <span class="js-his-name">Veen</span> made something sweet just for you...
+          </p>
+        </div>
+
+        <!-- Front Pocket -->
+        <div class="envelope-pocket"></div>
+
+        <!-- Top Flap -->
+        <div class="envelope-flap">
+          <div class="envelope-flap-shape"></div>
+        </div>
+
+        <!-- Glowing Wax Seal with M & V Emblem -->
+        <div class="wax-seal" aria-hidden="true">
+          <span id="seal-monogram" class="font-serif-display italic font-bold text-sm tracking-wider leading-none" style="color: #FDE8E8; text-shadow: 0 1px 3px rgba(60, 10, 20, 0.55);">
+            M &amp; V
+          </span>
+          <svg class="mt-0.5" width="12" height="12" viewBox="0 0 24 24" fill="#FDE8E8" stroke="#D4AF37" stroke-width="1">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <p class="mt-8 text-sm tracking-wide animate-pulse" style="color: var(--text-secondary);">
+      Tap the seal to open
+    </p>
+  </section>
+
+  <!-- ========================================================================
+       MAIN INTERACTIVE EXPERIENCE
+       ======================================================================== -->
+  <main id="main-content" class="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 pt-24 pb-28 space-y-20 sm:space-y-24 opacity-0 transition-opacity duration-1000">
+
+    <!-- ======================================================================
+         2. HERO GREETING & VIRTUAL HUG BUTTON
+         ====================================================================== -->
+    <header class="text-center space-y-6 fade-up">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold tracking-widest uppercase themed-card" style="color: var(--accent-gold); border-color: var(--border-gold);">
+        <span>✦</span>
+        <span>Made with love by <span class="js-his-name">Veen</span></span>
+        <span>✦</span>
+      </div>
+
+      <h1 class="font-serif-display text-4xl sm:text-6xl font-bold tracking-tight leading-tight">
+        For My Dearest <span class="italic js-her-name" style="color: var(--accent-rose-deep);">Mazz</span>
+      </h1>
+
+      <p class="max-w-xl mx-auto text-base sm:text-lg leading-relaxed" style="color: var(--text-secondary);">
+        A quiet little corner of the internet built just for you — to remind you how deeply loved, cherished, and endlessly special you are to <span class="js-his-name font-medium">Veen</span>, today and every single day.
+      </p>
+
+      <!-- Virtual Hug Interactive Widget -->
+      <div class="pt-4 flex flex-col items-center gap-4">
+        <button
+          id="hug-button"
+          type="button"
+          class="hug-btn inline-flex items-center gap-3 px-8 py-4 rounded-full text-base sm:text-lg font-semibold cursor-pointer"
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+          <span>Send a Virtual Hug</span>
+        </button>
+
+        <!-- Hug Counter Pill & Sweet Note -->
+        <div class="flex flex-col items-center gap-2 min-h-[58px]">
+          <span id="hug-counter" class="text-xs sm:text-sm font-medium px-4 py-1 rounded-full themed-card" style="color: var(--text-secondary);">
+            0 hugs shared between Mazz &amp; Veen
+          </span>
+          <p id="hug-message" class="font-handwriting text-xl sm:text-2xl opacity-0 transition-all duration-300 transform translate-y-1 px-4" style="color: var(--accent-rose-deep);"></p>
+        </div>
+      </div>
+    </header>
+
+    <!-- ======================================================================
+         3. INTERACTIVE "REASONS I LOVE YOU" CARD STACK
+         ====================================================================== -->
+    <section id="reasons-section" class="space-y-8 fade-up">
+      <div class="text-center space-y-2">
+        <p class="uppercase tracking-[0.22em] text-xs font-semibold" style="color: var(--accent-gold);">
+          Little Things, Big Feelings
+        </p>
+        <h2 class="font-serif-display text-3xl sm:text-4xl font-bold">
+          Reasons <span class="js-his-name">Veen</span> <span class="italic" style="color: var(--accent-rose-deep);">Loves</span> <span class="js-her-name">Mazz</span>
+        </h2>
+        <p class="text-sm sm:text-base" style="color: var(--text-secondary);">
+          Tap the card or swipe to flip through a few of my favorites
+        </p>
+      </div>
+
+      <!-- 3-Card Layered Stack -->
+      <div id="reason-deck" class="reason-deck-container" aria-live="polite">
+        <!-- Cards rendered dynamically via JS -->
+      </div>
+
+      <!-- Deck Controls -->
+      <div class="flex items-center justify-center gap-3 pt-4">
+        <button
+          id="btn-shuffle-reasons"
+          type="button"
+          class="themed-card px-4 py-2.5 rounded-full text-xs sm:text-sm font-semibold flex items-center gap-2 cursor-pointer hover:scale-105 active:scale-95"
+          style="color: var(--text-primary);"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="16 3 21 3 21 8"></polyline>
+            <line x1="4" y1="20" x2="21" y2="3"></line>
+            <polyline points="21 16 21 21 16 21"></polyline>
+            <line x1="15" y1="15" x2="21" y2="21"></line>
+            <line x1="4" y1="4" x2="9" y2="9"></line>
+          </svg>
+          <span>Shuffle</span>
+        </button>
+
+        <span id="reason-progress" class="px-4 py-2 rounded-full text-xs sm:text-sm font-semibold themed-card" style="color: var(--accent-gold); border-color: var(--border-gold);">
+          1 of 10
+        </span>
+
+        <button
+          id="btn-next-reason"
+          type="button"
+          class="px-5 py-2.5 rounded-full text-xs sm:text-sm font-semibold text-white flex items-center gap-1.5 cursor-pointer hover:scale-105 active:scale-95 transition-transform"
+          style="background: linear-gradient(135deg, var(--accent-rose), var(--accent-rose-deep)); box-shadow: var(--shadow-glow);"
+        >
+          <span>Next Reason</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         4. INTERACTIVE LOVE COUPONS (REDEEMABLE WITH CONFETTI)
+         ====================================================================== -->
+    <section id="coupons-section" class="space-y-8 fade-up">
+      <div class="text-center space-y-2">
+        <p class="uppercase tracking-[0.22em] text-xs font-semibold" style="color: var(--accent-gold);">
+          No Expiration Date
+        </p>
+        <h2 class="font-serif-display text-3xl sm:text-4xl font-bold">
+          <span class="js-her-name">Mazz</span>’s Personal <span class="italic" style="color: var(--accent-rose-deep);">Love Coupons</span>
+        </h2>
+        <p class="text-sm sm:text-base" style="color: var(--text-secondary);">
+          Tap any ticket to redeem it whenever you want — screenshot &amp; cash it in with <span class="js-his-name">Veen</span> anytime
+        </p>
+      </div>
+
+      <!-- 6-Coupon Responsive Grid -->
+      <div id="coupons-grid" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <!-- Coupons rendered dynamically via JS -->
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         5. PLAYFUL MINI-QUESTION ("MAZZ, WILL YOU STAY MINE FOREVER?")
+         ====================================================================== -->
+    <section id="question-section" class="fade-up">
+      <div class="themed-card rounded-3xl p-7 sm:p-10 text-center max-w-2xl mx-auto relative overflow-hidden" style="border-color: var(--border-gold);">
+        <p class="uppercase tracking-[0.24em] text-xs font-semibold mb-2" style="color: var(--accent-gold);">
+          Quick Question...
+        </p>
+        <h2 class="font-serif-display text-2xl sm:text-3xl font-bold leading-snug mb-6">
+          <span class="js-her-name">Mazz</span>, will you stay mine <span class="italic" style="color: var(--accent-rose-deep);">forever</span>?
+        </h2>
+
+        <!-- Interactive Arena for Yes / Dodging No Buttons -->
+        <div id="question-arena" class="question-arena flex flex-wrap items-center justify-center gap-4 py-4">
+          <button
+            id="btn-yes"
+            type="button"
+            class="hug-btn px-7 py-3.5 rounded-full text-sm sm:text-base font-semibold cursor-pointer z-10"
+          >
+            Yes! ♥
+          </button>
+
+          <button
+            id="btn-no"
+            type="button"
+            class="themed-card px-6 py-3.5 rounded-full text-sm sm:text-base font-medium cursor-pointer z-10"
+            style="color: var(--text-secondary);"
+          >
+            No
+          </button>
+        </div>
+
+        <!-- Sweet Reveal After Clicking Yes -->
+        <div id="yes-reveal" class="hidden pt-2 space-y-3">
+          <div class="inline-flex items-center justify-center w-14 h-14 rounded-full mb-1" style="background: rgba(216, 140, 154, 0.18); color: var(--accent-rose-deep);">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+            </svg>
+          </div>
+          <p class="font-handwriting text-3xl sm:text-4xl" style="color: var(--accent-rose-deep);">
+            Best answer ever, <span class="js-her-name">Mazz</span>!
+          </p>
+          <p class="text-sm sm:text-base max-w-md mx-auto leading-relaxed" style="color: var(--text-secondary);">
+            Not that <span class="js-his-name">Veen</span> gave you much of a choice — you’re officially stuck with my warmest hugs, terrible jokes, late-night food runs, and endless love for a very, very long time.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         6. INTERACTIVE PARCHMENT LOVE LETTER SECTION
+         ====================================================================== -->
+    <section id="letter-section" class="fade-up">
+      <div class="parchment-letter rounded-3xl p-7 sm:p-12 max-w-2xl mx-auto">
+        <!-- Gold Corner Flourishes -->
+        <span class="parchment-corner top-4 left-4 border-t-2 border-l-2 rounded-tl-md"></span>
+        <span class="parchment-corner top-4 right-4 border-t-2 border-r-2 rounded-tr-md"></span>
+        <span class="parchment-corner bottom-4 left-4 border-b-2 border-l-2 rounded-bl-md"></span>
+        <span class="parchment-corner bottom-4 right-4 border-b-2 border-r-2 rounded-br-md"></span>
+
+        <div class="text-center mb-8">
+          <div class="inline-flex items-center justify-center w-11 h-11 rounded-full mb-3" style="background: rgba(212, 175, 55, 0.14); color: var(--accent-gold); border: 1px solid var(--border-gold);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+            </svg>
+          </div>
+          <p class="uppercase tracking-[0.24em] text-xs font-semibold" style="color: var(--accent-gold);">
+            A Note From <span class="js-his-name">Veen</span> To <span class="js-her-name">Mazz</span>
+          </p>
+        </div>
+
+        <p class="font-handwriting text-3xl sm:text-4xl mb-6" style="color: var(--accent-rose-deep);">
+          Dearest <span class="js-her-name">Mazz</span>,
+        </p>
+
+        <div id="letter-body-display" class="space-y-4 text-base sm:text-[1.06rem] leading-8 whitespace-pre-line" style="color: var(--text-primary);">
+          <!-- Populated from state/localStorage -->
+        </div>
+
+        <div class="mt-9 pt-6 border-t flex flex-col items-end" style="border-color: var(--border-subtle);">
+          <p class="text-sm italic" style="color: var(--text-secondary);">Forever yours,</p>
+          <p id="letter-signature-display" class="font-handwriting text-3xl sm:text-4xl mt-1" style="color: var(--accent-rose-deep);">
+            Veen
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Gentle Footer -->
+    <footer class="text-center pt-4 pb-6 text-xs tracking-wide" style="color: var(--text-muted);">
+      Crafted with love by <span class="js-his-name">Veen</span> for <span class="js-her-name">Mazz</span> ♥
+    </footer>
+  </main>
+
+  <!-- ========================================================================
+       7. DISCREET "PERSONALIZE" BUTTON & MODAL (PRE-FILLED FOR MAZZ & VEEN)
+       ======================================================================== -->
+  <button
+    id="open-personalize"
+    type="button"
+    aria-label="Customize this page"
+    title="Customize"
+    class="fixed bottom-4 right-4 z-40 themed-card flex items-center gap-2 px-3.5 py-2.5 rounded-full text-xs font-medium opacity-75 hover:opacity-100 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+    style="color: var(--text-secondary);"
+  >
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 20h9"></path>
+      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+    </svg>
+    <span class="hidden sm:inline">Customize</span>
+  </button>
+
+  <!-- Personalize Modal Backdrop -->
+  <div id="personalize-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/45 backdrop-blur-sm">
+    <div class="themed-card rounded-3xl w-full max-w-lg p-6 sm:p-8 max-h-[90vh] overflow-y-auto space-y-5" style="background: var(--surface-solid);">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="font-serif-display text-2xl font-bold">Customize Experience</h3>
+          <p class="text-xs mt-0.5" style="color: var(--text-secondary);">Pre-filled for Mazz &amp; Veen. Changes save automatically.</p>
+        </div>
+        <button id="close-personalize" type="button" aria-label="Close customize modal" class="p-2 rounded-full hover:bg-rose-500/10 cursor-pointer" style="color: var(--text-secondary);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <form id="personalize-form" class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="input-her-name" class="block text-xs font-semibold uppercase tracking-wider mb-1.5" style="color: var(--text-secondary);">Her Name</label>
+            <input
+              id="input-her-name"
+              type="text"
+              placeholder="Mazz"
+              class="w-full px-4 py-2.5 rounded-xl text-sm outline-none border transition-colors"
+              style="background: var(--surface-soft); border-color: var(--border-subtle); color: var(--text-primary);"
+            />
+          </div>
+          <div>
+            <label for="input-his-name" class="block text-xs font-semibold uppercase tracking-wider mb-1.5" style="color: var(--text-secondary);">Your Name</label>
+            <input
+              id="input-his-name"
+              type="text"
+              placeholder="Veen"
+              class="w-full px-4 py-2.5 rounded-xl text-sm outline-none border transition-colors"
+              style="background: var(--surface-soft); border-color: var(--border-subtle); color: var(--text-primary);"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label for="input-envelope-title" class="block text-xs font-semibold uppercase tracking-wider mb-1.5" style="color: var(--text-secondary);">Envelope Cover Heading</label>
+          <input
+            id="input-envelope-title"
+            type="text"
+            placeholder="For Mazz"
+            class="w-full px-4 py-2.5 rounded-xl text-sm outline-none border transition-colors"
+            style="background: var(--surface-soft); border-color: var(--border-subtle); color: var(--text-primary);"
+          />
+        </div>
+
+        <div>
+          <label for="input-letter-text" class="block text-xs font-semibold uppercase tracking-wider mb-1.5" style="color: var(--text-secondary);">Your Love Letter</label>
+          <textarea
+            id="input-letter-text"
+            rows="6"
+            class="w-full px-4 py-3 rounded-xl text-sm leading-relaxed outline-none border transition-colors resize-y"
+            style="background: var(--surface-soft); border-color: var(--border-subtle); color: var(--text-primary);"
+          ></textarea>
+        </div>
+
+        <!-- Subtle Coupon Reset & Replay Tools -->
+        <div class="pt-2 border-t flex flex-wrap items-center justify-between gap-3" style="border-color: var(--border-subtle);">
+          <div class="flex flex-wrap items-center gap-3">
+            <button
+              id="btn-replay-envelope"
+              type="button"
+              class="text-xs font-semibold underline underline-offset-4 cursor-pointer"
+              style="color: var(--accent-rose-deep);"
+            >
+              Replay Envelope
+            </button>
+            <button
+              id="btn-reset-coupons"
+              type="button"
+              class="text-xs underline underline-offset-4 cursor-pointer"
+              style="color: var(--text-secondary);"
+            >
+              Reset Coupons
+            </button>
+            <button
+              id="btn-reset-defaults"
+              type="button"
+              class="text-xs underline underline-offset-4 cursor-pointer"
+              style="color: var(--text-muted);"
+            >
+              Reset Defaults
+            </button>
+          </div>
+
+          <button
+            type="submit"
+            class="px-6 py-2.5 rounded-full text-sm font-semibold text-white cursor-pointer hover:scale-105 active:scale-95 transition-transform"
+            style="background: linear-gradient(135deg, var(--accent-rose), var(--accent-rose-deep));"
+          >
+            Save &amp; Apply ♥
+          </button>
+        </div>
+
+        <p id="modal-status-msg" class="text-xs text-center min-h-[16px] font-medium" style="color: var(--accent-rose-deep);"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       JAVASCRIPT LOGIC (Self-contained, Vanilla JS, Web Audio, Canvas FX)
+       ======================================================================== -->
+  <script>
+    (function () {
+      'use strict';
+
+      /* ----------------------------------------------------------------------
+         1. DEFAULT DATA & LOCALSTORAGE STATE (Built for Mazz & Veen)
+         ---------------------------------------------------------------------- */
+      const STORAGE_KEYS = {
+        PROFILE: 'mazz_veen_profile_v2',
+        COUPONS: 'mazz_veen_coupons_v2',
+        HUGS: 'mazz_veen_hugs_v2',
+        THEME: 'mazz_veen_theme_v2'
+      };
+
+      const DEFAULT_PROFILE = {
+        herName: 'Mazz',
+        hisName: 'Veen',
+        envelopeTitle: 'For Mazz',
+        letterBody:
+          "I don't think I tell you this nearly enough, so I wanted to make a little place you can always come back to: you are genuinely the best part of my every day.\n\n" +
+          "Thank you for the warmth and light you bring into my life, for the way you listen, for your laugh that makes everything feel lighter in an instant, and for simply being yourself. Even the quietest, most ordinary moments with you are my favorite memories.\n\n" +
+          "Whenever you're having a long day or just need a quick smile, open this up and remember that I am endlessly proud of you, always cheering for you, and loving you more than words could ever fit on a screen."
+      };
+
+      const COUPONS_DATA = [
+        {
+          id: 'cravings',
+          tag: 'FOODIE PASS',
+          title: 'Late-Night Cravings Run',
+          desc: 'Ice cream, boba, fries, or whatever you are craving at midnight — Veen is driving, no questions asked.'
+        },
+        {
+          id: 'movie',
+          tag: 'COZY NIGHT',
+          title: 'Uninterrupted Movie Marathon',
+          desc: 'You own the remote, phones stay on silent, favorite snacks stocked, and unlimited cuddles included.'
+        },
+        {
+          id: 'massage',
+          tag: 'RELAXATION',
+          title: 'Back & Shoulder Massage',
+          desc: 'A full, unhurried shoulder & back massage whenever you feel tired or stressed. Zero complaints.'
+        },
+        {
+          id: 'date-night',
+          tag: 'YOUR PICK',
+          title: 'Date Night of {herName}’s Choice',
+          desc: 'Full creative control over the plan, the outfit vibe, and the menu. {hisName} handles everything.'
+        },
+        {
+          id: 'breakfast',
+          tag: 'SWEET MORNING',
+          title: 'Breakfast in Bed',
+          desc: 'Stay tucked under the blankets while your favorite morning treats and drink are delivered right to you.'
+        },
+        {
+          id: 'argument-pass',
+          tag: 'VIP PRIVILEGE',
+          title: 'Free Pass to Win Any Argument',
+          desc: 'Cash this in at any moment of your choosing. {hisName} will smile, nod, and agree you are 100% right.'
+        }
+      ];
+
+      const NO_BUTTON_LABELS = [
+        'Nice try, Mazz!',
+        'Wrong button!',
+        'Too slow!',
+        'Not an option 😉',
+        'Veen says nope!',
+        'Just click Yes!',
+        'Catch me first!'
+      ];
+
+      /* Dynamic templates that respect custom names if edited */
+      function getHugMessages() {
+        const her = profile.herName || DEFAULT_PROFILE.herName;
+        const his = profile.hisName || DEFAULT_PROFILE.hisName;
+        return [
+          `Sending the tightest hug to ${her} right now! ♥`,
+          `${his} wishes he was holding you right this second.`,
+          `100% certified forehead kiss for ${her} included.`,
+          `Holding you close for an extra 10 seconds, ${her}.`,
+          `All of ${his}'s warmth, delivered straight to ${her}.`,
+          `Consider yourself officially squeezed, ${her}!`,
+          `${his}'s favorite place in the world is right next to ${her}.`,
+          `Infinite refills on this hug anytime you need one, ${her}.`
+        ];
+      }
+
+      function getReasonsList() {
+        const her = profile.herName || DEFAULT_PROFILE.herName;
+        return [
+          `The way your eyes light up, ${her}, whenever you talk about something you genuinely love.`,
+          'How you turn even ordinary errands and quiet evenings into my favorite memories.',
+          'Your laugh — honestly, hands down, my favorite sound in the entire world.',
+          'The kindness and softness you show to the people around you without even realizing it.',
+          'How peaceful and effortless silence feels whenever I am just sitting next to you.',
+          'The adorable little expressions you make when you are focused or deciding what to eat.',
+          'How you always know how to make a long, tiring day feel lighter just by being there.',
+          'Your warmth — hugging you genuinely resets my entire mood in two seconds flat.',
+          'How you inspire me to be a better, kinder, more patient person every single day.',
+          `Simply being yourself, ${her} — you never even have to try to be extraordinary to me.`
+        ];
+      }
+
+      /* Safe localStorage helpers */
+      function loadJSON(key, fallback) {
+        try {
+          const raw = localStorage.getItem(key);
+          return raw ? JSON.parse(raw) : fallback;
+        } catch (err) {
+          return fallback;
+        }
+      }
+
+      function saveJSON(key, value) {
+        try {
+          localStorage.setItem(key, JSON.stringify(value));
+        } catch (err) {
+          // Ignore storage quota / private browsing errors gracefully
+        }
+      }
+
+      let profile = Object.assign({}, DEFAULT_PROFILE, loadJSON(STORAGE_KEYS.PROFILE, {}));
+      let redeemedCoupons = loadJSON(STORAGE_KEYS.COUPONS, {});
+      let hugCount = loadJSON(STORAGE_KEYS.HUGS, 0);
+      if (typeof hugCount !== 'number' || Number.isNaN(hugCount)) {
+        hugCount = 0;
+      }
+
+      let reasonsOrder = Array.from({ length: 10 }, (_, idx) => idx);
+      let currentReasonPos = 0;
+
+      /* ----------------------------------------------------------------------
+         2. THEME TOGGLE (ROSY MORNING <-> STARRY NIGHT)
+         ---------------------------------------------------------------------- */
+      const htmlEl = document.documentElement;
+      const themeToggleBtn = document.getElementById('theme-toggle');
+      const themeIconEl = document.getElementById('theme-icon');
+      const themeLabelEl = document.getElementById('theme-label');
+
+      let currentTheme = loadJSON(STORAGE_KEYS.THEME, 'morning');
+
+      function applyTheme(theme) {
+        currentTheme = theme === 'night' ? 'night' : 'morning';
+        htmlEl.setAttribute('data-theme', currentTheme);
+        saveJSON(STORAGE_KEYS.THEME, currentTheme);
+
+        if (currentTheme === 'night') {
+          themeLabelEl.textContent = 'Rosy Morning';
+          themeIconEl.innerHTML =
+            '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+            '<circle cx="12" cy="12" r="5"></circle>' +
+            '<line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line>' +
+            '<line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>' +
+            '<line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line>' +
+            '<line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>';
+        } else {
+          themeLabelEl.textContent = 'Starry Night';
+          themeIconEl.innerHTML =
+            '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+            '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
+        }
+      }
+
+      themeToggleBtn.addEventListener('click', () => {
+        applyTheme(currentTheme === 'morning' ? 'night' : 'morning');
+      });
+      applyTheme(currentTheme);
+
+      /* ----------------------------------------------------------------------
+         3. AMBIENT WEB AUDIO MUSIC BOX (Soft Romantic Arpeggio, No External Files)
+         ---------------------------------------------------------------------- */
+      const musicToggleBtn = document.getElementById('music-toggle');
+      const musicLabelEl = document.getElementById('music-label');
+      let audioCtx = null;
+      let isMusicPlaying = false;
+      let musicTimer = null;
+      let noteStep = 0;
+
+      // Gentle romantic I - vi - IV - V music-box chord progression (Hz)
+      const MELODY_NOTES = [
+        523.25, 659.25, 783.99, 1046.50, 783.99, 659.25,
+        440.00, 523.25, 659.25, 880.00, 659.25, 523.25,
+        349.23, 440.00, 523.25, 698.46, 523.25, 440.00,
+        392.00, 493.88, 587.33, 783.99, 587.33, 493.88
+      ];
+
+      function playMusicBoxNote(freq) {
+        if (!audioCtx || audioCtx.state !== 'running') return;
+        try {
+          const now = audioCtx.currentTime;
+          const masterGain = audioCtx.createGain();
+          masterGain.gain.setValueAtTime(0.0001, now);
+          masterGain.gain.exponentialRampToValueAtTime(0.055, now + 0.02);
+          masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 2.2);
+
+          const osc1 = audioCtx.createOscillator();
+          osc1.type = 'sine';
+          osc1.frequency.setValueAtTime(freq, now);
+
+          const osc2 = audioCtx.createOscillator();
+          const overtoneGain = audioCtx.createGain();
+          osc2.type = 'triangle';
+          osc2.frequency.setValueAtTime(freq * 2, now);
+          overtoneGain.gain.setValueAtTime(0.14, now);
+
+          osc1.connect(masterGain);
+          osc2.connect(overtoneGain);
+          overtoneGain.connect(masterGain);
+          masterGain.connect(audioCtx.destination);
+
+          osc1.start(now);
+          osc2.start(now);
+          osc1.stop(now + 2.3);
+          osc2.stop(now + 2.3);
+        } catch (err) {
+          // Safely ignore audio glitches
+        }
+      }
+
+      function startMusicBox() {
+        try {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (!AudioContextClass) return;
+          if (!audioCtx) {
+            audioCtx = new AudioContextClass();
+          }
+          if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+          }
+          isMusicPlaying = true;
+          musicToggleBtn.classList.add('music-playing');
+          musicLabelEl.textContent = 'Playing';
+
+          playMusicBoxNote(MELODY_NOTES[noteStep % MELODY_NOTES.length]);
+          noteStep++;
+
+          musicTimer = setInterval(() => {
+            if (!isMusicPlaying) return;
+            playMusicBoxNote(MELODY_NOTES[noteStep % MELODY_NOTES.length]);
+            noteStep++;
+          }, 560);
+        } catch (err) {
+          isMusicPlaying = false;
+        }
+      }
+
+      function stopMusicBox() {
+        isMusicPlaying = false;
+        if (musicTimer) {
+          clearInterval(musicTimer);
+          musicTimer = null;
+        }
+        musicToggleBtn.classList.remove('music-playing');
+        musicLabelEl.textContent = 'Music Box';
+      }
+
+      musicToggleBtn.addEventListener('click', () => {
+        if (isMusicPlaying) {
+          stopMusicBox();
+        } else {
+          startMusicBox();
+        }
+      });
+
+      /* ----------------------------------------------------------------------
+         4. AMBIENT BACKGROUND CANVAS (Rose Petals & Hearts / Stars & Fireflies)
+         ---------------------------------------------------------------------- */
+      const ambientCanvas = document.getElementById('ambient-canvas');
+      const ambientCtx = ambientCanvas.getContext('2d');
+      const fxCanvas = document.getElementById('fx-canvas');
+      const fxCtx = fxCanvas.getContext('2d');
+
+      let width = window.innerWidth;
+      let height = window.innerHeight;
+      const pointer = { x: -999, y: -999, active: false };
+
+      function resizeCanvases() {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        width = window.innerWidth;
+        height = window.innerHeight;
+
+        [ambientCanvas, fxCanvas].forEach((canvas) => {
+          canvas.width = width * dpr;
+          canvas.height = height * dpr;
+          canvas.style.width = width + 'px';
+          canvas.style.height = height + 'px';
+          const ctx = canvas.getContext('2d');
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        });
+      }
+
+      window.addEventListener('resize', resizeCanvases);
+      resizeCanvases();
+
+      window.addEventListener('mousemove', (e) => {
+        pointer.x = e.clientX;
+        pointer.y = e.clientY;
+        pointer.active = true;
+      }, { passive: true });
+
+      window.addEventListener('touchmove', (e) => {
+        if (e.touches && e.touches[0]) {
+          pointer.x = e.touches[0].clientX;
+          pointer.y = e.touches[0].clientY;
+          pointer.active = true;
+        }
+      }, { passive: true });
+
+      window.addEventListener('mouseleave', () => {
+        pointer.active = false;
+      });
+
+      const ambientParticles = [];
+      const AMBIENT_COUNT = Math.min(48, Math.max(26, Math.floor(width / 28)));
+
+      for (let i = 0; i < AMBIENT_COUNT; i++) {
+        const rand = Math.random();
+        ambientParticles.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          size: 5 + Math.random() * 7,
+          vx: (Math.random() - 0.5) * 0.4,
+          vy: 0.25 + Math.random() * 0.45,
+          angle: Math.random() * Math.PI * 2,
+          spin: (Math.random() - 0.5) * 0.018,
+          swayOffset: Math.random() * Math.PI * 2,
+          alpha: 0.24 + Math.random() * 0.42,
+          kind: rand > 0.78 ? 'heart' : rand > 0.62 ? 'sparkle' : 'petal'
+        });
+      }
+
+      const stars = [];
+      for (let i = 0; i < 80; i++) {
+        stars.push({
+          x: Math.random(),
+          y: Math.random(),
+          r: 0.6 + Math.random() * 1.5,
+          phase: Math.random() * Math.PI * 2,
+          speed: 0.015 + Math.random() * 0.025
+        });
+      }
+
+      const fxParticles = [];
+
+      function drawHeart(ctx, x, y, size, color, alpha, rotation) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(rotation);
+        ctx.globalAlpha = Math.max(0, alpha);
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        const topCurveHeight = size * 0.3;
+        ctx.moveTo(0, topCurveHeight);
+        ctx.bezierCurveTo(0, 0, -size / 2, 0, -size / 2, topCurveHeight);
+        ctx.bezierCurveTo(-size / 2, (size + topCurveHeight) / 2, 0, (size + topCurveHeight) / 1.15, 0, size);
+        ctx.bezierCurveTo(0, (size + topCurveHeight) / 1.15, size / 2, (size + topCurveHeight) / 2, size / 2, topCurveHeight);
+        ctx.bezierCurveTo(size / 2, 0, 0, 0, 0, topCurveHeight);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+
+      function spawnBurst(originX, originY, type = 'hearts', count = 26) {
+        const colors =
+          type === 'confetti'
+            ? ['#D88C9A', '#FDE8E8', '#D4AF37', '#F2B5C4', '#B85C6F', '#FFF1D6']
+            : ['#D88C9A', '#E89AA9', '#B85C6F', '#D4AF37', '#F7C6CE'];
+
+        for (let i = 0; i < count; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = 2.2 + Math.random() * 6.5;
+          fxParticles.push({
+            x: originX,
+            y: originY,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed - (type === 'hearts' ? 2.8 : 3.5),
+            size: type === 'hearts' ? 9 + Math.random() * 11 : 6 + Math.random() * 6,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            alpha: 1,
+            decay: 0.012 + Math.random() * 0.01,
+            rotation: Math.random() * Math.PI * 2,
+            spin: (Math.random() - 0.5) * 0.14,
+            gravity: type === 'confetti' ? 0.13 : 0.06,
+            shape: type === 'confetti' && Math.random() > 0.35 ? 'rect' : 'heart'
+          });
+        }
+      }
+
+      function animateCanvases(time) {
+        ambientCtx.clearRect(0, 0, width, height);
+
+        if (currentTheme === 'night') {
+          for (let i = 0; i < stars.length; i++) {
+            const s = stars[i];
+            s.phase += s.speed;
+            const twinkle = 0.25 + 0.75 * (0.5 + 0.5 * Math.sin(s.phase));
+            ambientCtx.beginPath();
+            ambientCtx.arc(s.x * width, s.y * height, s.r, 0, Math.PI * 2);
+            ambientCtx.fillStyle = `rgba(253, 244, 245, ${twinkle * 0.75})`;
+            ambientCtx.fill();
+          }
+        }
+
+        for (let i = 0; i < ambientParticles.length; i++) {
+          const p = ambientParticles[i];
+          const sway = Math.sin(time * 0.001 + p.swayOffset) * 0.45;
+          p.x += p.vx + sway;
+          p.y += currentTheme === 'night' ? -p.vy * 0.45 : p.vy;
+          p.angle += p.spin;
+
+          if (pointer.active) {
+            const dx = p.x - pointer.x;
+            const dy = p.y - pointer.y;
+            const distSq = dx * dx + dy * dy;
+            if (distSq < 13000 && distSq > 1) {
+              const force = (1 - Math.sqrt(distSq) / 114) * 0.9;
+              p.x += (dx / Math.sqrt(distSq)) * force;
+              p.y += (dy / Math.sqrt(distSq)) * force;
+            }
+          }
+
+          if (p.y > height + 20) {
+            p.y = -20;
+            p.x = Math.random() * width;
+          } else if (p.y < -20) {
+            p.y = height + 20;
+            p.x = Math.random() * width;
+          }
+          if (p.x > width + 20) p.x = -20;
+          if (p.x < -20) p.x = width + 20;
+
+          if (currentTheme === 'night') {
+            const glowAlpha = p.alpha * (0.6 + 0.4 * Math.sin(time * 0.002 + p.swayOffset));
+            const grad = ambientCtx.createRadialGradient(p.x, p.y, 0.5, p.x, p.y, p.size * 2.2);
+            grad.addColorStop(0, `rgba(229, 197, 88, ${glowAlpha})`);
+            grad.addColorStop(1, 'rgba(229, 197, 88, 0)');
+            ambientCtx.fillStyle = grad;
+            ambientCtx.beginPath();
+            ambientCtx.arc(p.x, p.y, p.size * 2.2, 0, Math.PI * 2);
+            ambientCtx.fill();
+          } else if (p.kind === 'heart') {
+            drawHeart(ambientCtx, p.x, p.y, p.size * 1.1, '#D88C9A', p.alpha * 0.38, Math.sin(p.angle) * 0.4);
+          } else if (p.kind === 'sparkle') {
+            ambientCtx.save();
+            ambientCtx.translate(p.x, p.y);
+            ambientCtx.rotate(p.angle);
+            ambientCtx.fillStyle = `rgba(212, 175, 55, ${p.alpha * 0.65})`;
+            ambientCtx.beginPath();
+            ambientCtx.arc(0, 0, p.size * 0.26, 0, Math.PI * 2);
+            ambientCtx.fill();
+            ambientCtx.restore();
+          } else {
+            ambientCtx.save();
+            ambientCtx.translate(p.x, p.y);
+            ambientCtx.rotate(p.angle);
+            ambientCtx.fillStyle = `rgba(216, 140, 154, ${p.alpha * 0.5})`;
+            ambientCtx.beginPath();
+            ambientCtx.ellipse(0, 0, p.size, p.size * 0.56, 0, 0, Math.PI * 2);
+            ambientCtx.fill();
+            ambientCtx.restore();
+          }
+        }
+
+        fxCtx.clearRect(0, 0, width, height);
+        for (let i = fxParticles.length - 1; i >= 0; i--) {
+          const f = fxParticles[i];
+          f.x += f.vx;
+          f.y += f.vy;
+          f.vy += f.gravity;
+          f.vx *= 0.985;
+          f.rotation += f.spin;
+          f.alpha -= f.decay;
+
+          if (f.alpha <= 0) {
+            fxParticles.splice(i, 1);
+            continue;
+          }
+
+          if (f.shape === 'heart') {
+            drawHeart(fxCtx, f.x, f.y, f.size, f.color, f.alpha, f.rotation);
+          } else {
+            fxCtx.save();
+            fxCtx.translate(f.x, f.y);
+            fxCtx.rotate(f.rotation);
+            fxCtx.globalAlpha = Math.max(0, f.alpha);
+            fxCtx.fillStyle = f.color;
+            fxCtx.fillRect(-f.size / 2, -f.size / 3, f.size, f.size * 0.65);
+            fxCtx.restore();
+          }
+        }
+
+        requestAnimationFrame(animateCanvases);
+      }
+
+      /* ----------------------------------------------------------------------
+         5. OPENING ENVELOPE FLOW
+         ---------------------------------------------------------------------- */
+      const envelopeOverlay = document.getElementById('envelope-overlay');
+      const envelopeStage = document.getElementById('envelope-stage');
+      const mainContent = document.getElementById('main-content');
+      let envelopeOpened = false;
+
+      function openEnvelope() {
+        if (envelopeOpened) return;
+        envelopeOpened = true;
+        envelopeStage.classList.add('is-open');
+
+        const rect = envelopeStage.getBoundingClientRect();
+        spawnBurst(rect.left + rect.width / 2, rect.top + rect.height / 2, 'hearts', 36);
+
+        setTimeout(() => {
+          envelopeOverlay.classList.add('hidden-overlay');
+          mainContent.classList.remove('opacity-0');
+          triggerScrollReveals();
+        }, 1050);
+      }
+
+      envelopeStage.addEventListener('click', openEnvelope);
+      envelopeStage.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openEnvelope();
+        }
+      });
+
+      /* ----------------------------------------------------------------------
+         6. VIRTUAL HUG INTERACTION
+         ---------------------------------------------------------------------- */
+      const hugBtn = document.getElementById('hug-button');
+      const hugCounterEl = document.getElementById('hug-counter');
+      const hugMessageEl = document.getElementById('hug-message');
+      let lastHugMsgIdx = -1;
+      let hugMsgTimeout = null;
+
+      function updateHugCounterDisplay() {
+        const her = profile.herName || DEFAULT_PROFILE.herName;
+        const his = profile.hisName || DEFAULT_PROFILE.hisName;
+        const unit = hugCount === 1 ? 'hug' : 'hugs';
+        hugCounterEl.textContent = `${hugCount} ${unit} shared between ${her} & ${his}`;
+      }
+
+      hugBtn.addEventListener('click', () => {
+        hugCount += 1;
+        saveJSON(STORAGE_KEYS.HUGS, hugCount);
+        updateHugCounterDisplay();
+
+        const rect = hugBtn.getBoundingClientRect();
+        spawnBurst(rect.left + rect.width / 2, rect.top + rect.height / 2, 'hearts', 24);
+
+        const msgs = getHugMessages();
+        let idx = Math.floor(Math.random() * msgs.length);
+        if (idx === lastHugMsgIdx) idx = (idx + 1) % msgs.length;
+        lastHugMsgIdx = idx;
+
+        hugMessageEl.textContent = msgs[idx];
+        hugMessageEl.classList.remove('opacity-0', 'translate-y-1');
+        hugMessageEl.classList.add('opacity-100', 'translate-y-0');
+
+        if (hugMsgTimeout) clearTimeout(hugMsgTimeout);
+        hugMsgTimeout = setTimeout(() => {
+          hugMessageEl.classList.add('opacity-0', 'translate-y-1');
+          hugMessageEl.classList.remove('opacity-100', 'translate-y-0');
+        }, 3400);
+      });
+
+      /* ----------------------------------------------------------------------
+         7. INTERACTIVE "REASONS I LOVE YOU" CARD STACK (Click + Touch Swipe)
+         ---------------------------------------------------------------------- */
+      const reasonDeckEl = document.getElementById('reason-deck');
+      const reasonProgressEl = document.getElementById('reason-progress');
+      const btnNextReason = document.getElementById('btn-next-reason');
+      const btnShuffleReasons = document.getElementById('btn-shuffle-reasons');
+      let isFlippingReason = false;
+
+      function renderReasonDeck() {
+        const reasons = getReasonsList();
+        reasonDeckEl.innerHTML = '';
+        const total = reasonsOrder.length;
+        reasonProgressEl.textContent = `${currentReasonPos + 1} of ${total}`;
+
+        const layers = [
+          { offset: 2, cls: 'card-back' },
+          { offset: 1, cls: 'card-mid' },
+          { offset: 0, cls: 'card-front' }
+        ];
+
+        layers.forEach(({ offset, cls }) => {
+          const pos = (currentReasonPos + offset) % total;
+          const reasonIdx = reasonsOrder[pos];
+          const card = document.createElement('div');
+          card.className = `reason-card ${cls}`;
+          card.innerHTML = `
+            <span class="text-xs font-semibold uppercase tracking-[0.22em] mb-4" style="color: var(--accent-gold);">
+              Reason #${pos + 1}
+            </span>
+            <p class="font-serif-display text-xl sm:text-2xl leading-relaxed" style="color: var(--text-primary);">
+              “${reasons[reasonIdx]}”
+            </p>
+            <span class="mt-5 text-xs opacity-60" style="color: var(--text-muted);">
+              ${offset === 0 ? 'Tap or swipe for next ♥' : ''}
+            </span>
+          `;
+
+          if (offset === 0) {
+            card.addEventListener('click', () => advanceReason('left'));
+          }
+          reasonDeckEl.appendChild(card);
+        });
+      }
+
+      function advanceReason(direction = 'left') {
+        if (isFlippingReason) return;
+        isFlippingReason = true;
+
+        const frontCard = reasonDeckEl.querySelector('.card-front');
+        if (frontCard) {
+          frontCard.classList.add(direction === 'right' ? 'flying-out-right' : 'flying-out-left');
+        }
+
+        setTimeout(() => {
+          currentReasonPos = (currentReasonPos + 1) % reasonsOrder.length;
+          renderReasonDeck();
+          isFlippingReason = false;
+        }, 320);
+      }
+
+      btnNextReason.addEventListener('click', () => advanceReason('left'));
+
+      btnShuffleReasons.addEventListener('click', () => {
+        for (let i = reasonsOrder.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [reasonsOrder[i], reasonsOrder[j]] = [reasonsOrder[j], reasonsOrder[i]];
+        }
+        currentReasonPos = 0;
+        renderReasonDeck();
+      });
+
+      let touchStartX = 0;
+      reasonDeckEl.addEventListener('touchstart', (e) => {
+        if (e.touches && e.touches[0]) touchStartX = e.touches[0].clientX;
+      }, { passive: true });
+
+      reasonDeckEl.addEventListener('touchend', (e) => {
+        if (!e.changedTouches || !e.changedTouches[0]) return;
+        const deltaX = e.changedTouches[0].clientX - touchStartX;
+        if (Math.abs(deltaX) > 45) {
+          advanceReason(deltaX > 0 ? 'right' : 'left');
+        }
+      }, { passive: true });
+
+      /* ----------------------------------------------------------------------
+         8. INTERACTIVE LOVE COUPONS (REDEEMABLE WITH CONFETTI)
+         ---------------------------------------------------------------------- */
+      const couponsGridEl = document.getElementById('coupons-grid');
+
+      function interpolateNames(str) {
+        const her = profile.herName || DEFAULT_PROFILE.herName;
+        const his = profile.hisName || DEFAULT_PROFILE.hisName;
+        return str.replace(/\{herName\}/g, her).replace(/\{hisName\}/g, his);
+      }
+
+      function renderCoupons() {
+        couponsGridEl.innerHTML = '';
+
+        COUPONS_DATA.forEach((coupon) => {
+          const isRedeemed = Boolean(redeemedCoupons[coupon.id]);
+          const card = document.createElement('div');
+          card.className = `coupon-ticket p-5 sm:p-6 flex flex-col justify-between gap-4 ${isRedeemed ? 'is-redeemed' : ''}`;
+
+          card.innerHTML = `
+            <span class="coupon-notch-left" aria-hidden="true"></span>
+            <span class="coupon-notch-right" aria-hidden="true"></span>
+            <div class="coupon-stamp" aria-hidden="${!isRedeemed}">REDEEMED ♥</div>
+
+            <div class="coupon-body space-y-2 transition-opacity duration-300">
+              <div class="flex items-center justify-between">
+                <span class="text-[11px] font-bold tracking-[0.2em] uppercase" style="color: var(--accent-gold);">
+                  ${coupon.tag}
+                </span>
+                <span class="text-xs" style="color: var(--accent-rose);">♥</span>
+              </div>
+              <h3 class="font-serif-display text-xl font-bold leading-snug" style="color: var(--text-primary);">
+                ${interpolateNames(coupon.title)}
+              </h3>
+              <p class="text-xs sm:text-sm leading-relaxed" style="color: var(--text-secondary);">
+                ${interpolateNames(coupon.desc)}
+              </p>
+            </div>
+
+            <div class="coupon-body pt-3 border-t border-dashed flex items-center justify-between" style="border-color: var(--border-subtle);">
+              <span class="text-[11px] uppercase tracking-widest" style="color: var(--text-muted);">
+                Valid Forever
+              </span>
+              <button
+                type="button"
+                data-coupon-id="${coupon.id}"
+                class="redeem-btn px-4 py-1.5 rounded-full text-xs font-semibold transition-transform hover:scale-105 active:scale-95 cursor-pointer"
+                style="${
+                  isRedeemed
+                    ? 'background: var(--surface-soft); color: var(--text-muted);'
+                    : 'background: linear-gradient(135deg, var(--accent-rose), var(--accent-rose-deep)); color: #fff;'
+                }"
+              >
+                ${isRedeemed ? 'Redeemed' : 'Redeem'}
+              </button>
+            </div>
+          `;
+
+          const btn = card.querySelector('.redeem-btn');
+          btn.addEventListener('click', (e) => {
+            if (redeemedCoupons[coupon.id]) return;
+            redeemedCoupons[coupon.id] = true;
+            saveJSON(STORAGE_KEYS.COUPONS, redeemedCoupons);
+
+            card.classList.add('is-redeemed');
+            btn.textContent = 'Redeemed';
+            btn.style.background = 'var(--surface-soft)';
+            btn.style.color = 'var(--text-muted)';
+
+            const rect = e.currentTarget.getBoundingClientRect();
+            spawnBurst(rect.left + rect.width / 2, rect.top + rect.height / 2, 'confetti', 34);
+          });
+
+          couponsGridEl.appendChild(card);
+        });
+      }
+
+      /* ----------------------------------------------------------------------
+         9. PLAYFUL MINI-QUESTION (DODGING "NO" BUTTON & CELEBRATION "YES")
+         ---------------------------------------------------------------------- */
+      const questionArena = document.getElementById('question-arena');
+      const btnYes = document.getElementById('btn-yes');
+      const btnNo = document.getElementById('btn-no');
+      const yesReveal = document.getElementById('yes-reveal');
+      let noDodgeCount = 0;
+
+      function dodgeNoButton(e) {
+        if (e) e.preventDefault();
+        const arenaRect = questionArena.getBoundingClientRect();
+        const btnRect = btnNo.getBoundingClientRect();
+
+        btnNo.style.position = 'absolute';
+
+        const padding = 8;
+        const maxLeft = Math.max(padding, arenaRect.width - btnRect.width - padding);
+        const maxTop = Math.max(padding, arenaRect.height - btnRect.height - padding);
+
+        const nextLeft = padding + Math.random() * (maxLeft - padding);
+        const nextTop = padding + Math.random() * (maxTop - padding);
+
+        btnNo.style.left = `${nextLeft}px`;
+        btnNo.style.top = `${nextTop}px`;
+
+        btnNo.textContent = NO_BUTTON_LABELS[noDodgeCount % NO_BUTTON_LABELS.length];
+        noDodgeCount++;
+      }
+
+      btnNo.addEventListener('mouseenter', dodgeNoButton);
+      btnNo.addEventListener('touchstart', dodgeNoButton, { passive: false });
+      btnNo.addEventListener('click', dodgeNoButton);
+
+      btnYes.addEventListener('click', () => {
+        questionArena.classList.add('hidden');
+        yesReveal.classList.remove('hidden');
+
+        spawnBurst(width * 0.25, height * 0.45, 'hearts', 30);
+        spawnBurst(width * 0.5, height * 0.4, 'confetti', 36);
+        spawnBurst(width * 0.75, height * 0.45, 'hearts', 30);
+      });
+
+      /* ----------------------------------------------------------------------
+         10. PERSONALIZATION MODAL (PRE-FILLED WITH MAZZ & VEEN)
+         ---------------------------------------------------------------------- */
+      const openPersonalizeBtn = document.getElementById('open-personalize');
+      const closePersonalizeBtn = document.getElementById('close-personalize');
+      const personalizeModal = document.getElementById('personalize-modal');
+      const personalizeForm = document.getElementById('personalize-form');
+      const inputHerName = document.getElementById('input-her-name');
+      const inputHisName = document.getElementById('input-his-name');
+      const inputEnvelopeTitle = document.getElementById('input-envelope-title');
+      const inputLetterText = document.getElementById('input-letter-text');
+      const btnReplayEnvelope = document.getElementById('btn-replay-envelope');
+      const btnResetCoupons = document.getElementById('btn-reset-coupons');
+      const btnResetDefaults = document.getElementById('btn-reset-defaults');
+      const modalStatusMsg = document.getElementById('modal-status-msg');
+
+      const envelopeTitleEl = document.getElementById('envelope-title');
+      const sealMonogramEl = document.getElementById('seal-monogram');
+      const letterBodyDisplay = document.getElementById('letter-body-display');
+      const letterSignatureDisplay = document.getElementById('letter-signature-display');
+
+      function showModalStatus(msg) {
+        modalStatusMsg.textContent = msg;
+        setTimeout(() => {
+          if (modalStatusMsg.textContent === msg) modalStatusMsg.textContent = '';
+        }, 2500);
+      }
+
+      function applyProfileToDOM() {
+        const herName = (profile.herName || DEFAULT_PROFILE.herName).trim();
+        const hisName = (profile.hisName || DEFAULT_PROFILE.hisName).trim();
+        const envTitle = (profile.envelopeTitle || DEFAULT_PROFILE.envelopeTitle).trim();
+        const letter = (profile.letterBody || DEFAULT_PROFILE.letterBody).trim();
+
+        document.querySelectorAll('.js-her-name').forEach((el) => {
+          el.textContent = herName;
+        });
+        document.querySelectorAll('.js-his-name').forEach((el) => {
+          el.textContent = hisName;
+        });
+
+        envelopeTitleEl.textContent = envTitle;
+        const firstInitial = herName.charAt(0).toUpperCase() || 'M';
+        const secondInitial = hisName.charAt(0).toUpperCase() || 'V';
+        sealMonogramEl.textContent = `${firstInitial} & ${secondInitial}`;
+
+        letterBodyDisplay.textContent = letter;
+        letterSignatureDisplay.textContent = hisName;
+        document.title = `For My Dearest ${herName} ♥`;
+
+        updateHugCounterDisplay();
+        renderReasonDeck();
+        renderCoupons();
+      }
+
+      function openPersonalizeModal() {
+        inputHerName.value = profile.herName;
+        inputHisName.value = profile.hisName;
+        inputEnvelopeTitle.value = profile.envelopeTitle;
+        inputLetterText.value = profile.letterBody;
+        modalStatusMsg.textContent = '';
+        personalizeModal.classList.remove('hidden');
+        personalizeModal.classList.add('flex');
+      }
+
+      function closePersonalizeModal() {
+        personalizeModal.classList.add('hidden');
+        personalizeModal.classList.remove('flex');
+      }
+
+      openPersonalizeBtn.addEventListener('click', openPersonalizeModal);
+      closePersonalizeBtn.addEventListener('click', closePersonalizeModal);
+      personalizeModal.addEventListener('click', (e) => {
+        if (e.target === personalizeModal) closePersonalizeModal();
+      });
+
+      personalizeForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        profile = {
+          herName: inputHerName.value.trim() || DEFAULT_PROFILE.herName,
+          hisName: inputHisName.value.trim() || DEFAULT_PROFILE.hisName,
+          envelopeTitle: inputEnvelopeTitle.value.trim() || DEFAULT_PROFILE.envelopeTitle,
+          letterBody: inputLetterText.value.trim() || DEFAULT_PROFILE.letterBody
+        };
+        saveJSON(STORAGE_KEYS.PROFILE, profile);
+        applyProfileToDOM();
+        closePersonalizeModal();
+      });
+
+      btnResetCoupons.addEventListener('click', () => {
+        redeemedCoupons = {};
+        saveJSON(STORAGE_KEYS.COUPONS, redeemedCoupons);
+        renderCoupons();
+        showModalStatus('All love coupons have been reset ♥');
+      });
+
+      btnResetDefaults.addEventListener('click', () => {
+        profile = Object.assign({}, DEFAULT_PROFILE);
+        saveJSON(STORAGE_KEYS.PROFILE, profile);
+        applyProfileToDOM();
+        inputHerName.value = profile.herName;
+        inputHisName.value = profile.hisName;
+        inputEnvelopeTitle.value = profile.envelopeTitle;
+        inputLetterText.value = profile.letterBody;
+        showModalStatus('Restored Mazz & Veen defaults ♥');
+      });
+
+      btnReplayEnvelope.addEventListener('click', () => {
+        closePersonalizeModal();
+        envelopeOpened = false;
+        envelopeStage.classList.remove('is-open');
+        envelopeOverlay.classList.remove('hidden-overlay');
+        mainContent.classList.add('opacity-0');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+
+      applyProfileToDOM();
+
+      /* ----------------------------------------------------------------------
+         11. SCROLL REVEAL OBSERVER & ANIMATION LOOP START
+         ---------------------------------------------------------------------- */
+      function triggerScrollReveals() {
+        const elements = document.querySelectorAll('.fade-up');
+        if (!('IntersectionObserver' in window)) {
+          elements.forEach((el) => el.classList.add('visible'));
+          return;
+        }
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target);
+              }
+            });
+          },
+          { threshold: 0.12 }
+        );
+        elements.forEach((el) => observer.observe(el));
+      }
+
+      window.addEventListener('load', () => {
+        requestAnimationFrame(animateCanvases);
+      });
+    })();
+  </script>
+</body>
+</html>
